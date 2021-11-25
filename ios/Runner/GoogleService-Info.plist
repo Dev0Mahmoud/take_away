@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>198718439226-ql5293u5pebttlor4e7p1094dnd0h3ap.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.198718439226-ql5293u5pebttlor4e7p1094dnd0h3ap</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>198718439226-3kujopemc3hld74tp5j5bkivt0e8vg39.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyAfibDZB3ITBP6DU4fKNWxOlbQlgdONaVM</string>
+	<key>GCM_SENDER_ID</key>
+	<string>198718439226</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>mahmoud-khalil.takeAway</string>
+	<key>PROJECT_ID</key>
+	<string>takeaway-220f8</string>
+	<key>STORAGE_BUCKET</key>
+	<string>takeaway-220f8.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false/>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false/>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true/>
+	<key>IS_GCM_ENABLED</key>
+	<true/>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true/>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:198718439226:ios:5de94b3df9ceed595c5a03</string>
+</dict>
+</plist>

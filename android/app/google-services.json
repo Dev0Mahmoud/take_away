@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "198718439226",
+    "project_id": "takeaway-220f8",
+    "storage_bucket": "takeaway-220f8.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:198718439226:android:3384b8187c02103d5c5a03",
+        "android_client_info": {
+          "package_name": "com.example.take_away"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "198718439226-3kujopemc3hld74tp5j5bkivt0e8vg39.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.take_away",
+            "certificate_hash": "9208aa6fb54fccf795f61d22dd18ba192595e588"
+          }
+        },
+        {
+          "client_id": "198718439226-hprdmv6pf1kgj732g83e3inq5b017umc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAjZhz_965yiS3S98dPqOGOBnIb_iHEb6c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "198718439226-hprdmv6pf1kgj732g83e3inq5b017umc.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
