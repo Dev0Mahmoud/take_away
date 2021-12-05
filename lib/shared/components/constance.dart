@@ -17,6 +17,9 @@ void signOut(context) {
 }
 
 
+int dId = CacheHelper.getData(key: 'dId');
+
+int oId = CacheHelper.getData(key: 'oId');
 String? uId;
 String? token;
 

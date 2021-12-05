@@ -1,12 +1,9 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_conditional_rendering/conditional.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:take_away/data/dialoge_options.dart';
-import 'package:take_away/data/dialoge_options.dart';
-import 'package:take_away/data/hot_drinks_menu.dart';
 import 'package:take_away/layout/main_cubit/cubit.dart';
 import 'package:take_away/layout/main_cubit/states.dart';
 import 'package:take_away/model/drinks_model.dart';
@@ -26,13 +23,14 @@ class HotDrinksScreen extends StatelessWidget {
         showToast(state: ToastStates.ERROR, msg: 'طلبك إتلغي');
       }
     }, builder: (context, state) {
+          var cubit = MainLayCubit.get(context);
       return Conditional.single(
-          conditionBuilder: (context) => HotDrinksMenu.menu.isNotEmpty,
-          widgetBuilder: (BuildContext context) => ListView.separated(
+          conditionBuilder: (context) => cubit.hotDrinksMenu.isNotEmpty,
+          widgetBuilder: (BuildContext context) => ListView.builder(
                 itemBuilder: (context, index) =>
-                    hotItemBuilder(HotDrinksMenu.menu[index], index, context),
-                separatorBuilder: (context, index) => myDivider(),
-                itemCount: HotDrinksMenu.menu.length,
+                    hotItemBuilder(cubit.hotDrinksMenu[index], index, context),
+
+                itemCount: cubit.hotDrinksMenu.length,
               ),
           fallbackBuilder: (context) =>
               const Center(child: CircularProgressIndicator()),
@@ -49,19 +47,18 @@ Widget hotItemBuilder(
   var cubit = MainLayCubit.get(context);
   TextEditingController otherAddController = TextEditingController();
 
-  return Container(
-    padding: const EdgeInsets.symmetric(vertical: 5),
-    clipBehavior: Clip.hardEdge,
-    decoration: BoxDecoration(
-        borderRadius: BorderRadiusDirectional.circular(50)
-    ),
-    child: Card(
-      shadowColor: Colors.grey.withOpacity(.3),
-      elevation: 3,
-      margin: const EdgeInsets.symmetric(vertical: 2),
-      color: Colors.orange.withOpacity(.1),
-      child: Padding(
-        padding: const EdgeInsets.all(10.0),
+  return Padding(
+    padding: const EdgeInsets.all(8.0),
+    child: Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+          borderRadius: BorderRadiusDirectional.circular(20)
+      ),
+      child: Card(
+        shadowColor: Colors.grey.withOpacity(.3),
+        elevation: 3,
+        margin: const EdgeInsets.symmetric(vertical: 2),
+        color: Colors.orange.withOpacity(.1),
         child: InkWell(
           onTap: () {
             showDialog(
@@ -83,11 +80,19 @@ Widget hotItemBuilder(
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Image(
-                                        image: NetworkImage(model.drinkImage),
-                                        width: 70,
-                                        height: 70,
-                                        fit: BoxFit.cover,
+                                      Container(
+                                        width: 100,
+                                        height: 100,
+                                        clipBehavior: Clip.antiAlias,
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadiusDirectional.circular(15)
+                                        ),
+                                        child: Image(
+                                          image: NetworkImage(model.drinkImage),
+                                          width: 100,
+                                          height: 100,
+                                          fit: BoxFit.cover,
+                                        ),
                                       ),
                                       const SizedBox(
                                         width: 10,
@@ -296,6 +301,7 @@ Widget hotItemBuilder(
                                     width: 230,
                                     height: 50,
                                     child: defaultFormField(
+                                      textDirection: TextDirection.rtl,
                                       context: context,
                                       controller: otherAddController,
                                       label: 'ضيف علي طلبي ٫٫٫',
@@ -393,6 +399,7 @@ Widget hotItemBuilder(
               Expanded(
                 child: Text(
                   model.drinkName,
+                  textAlign: TextAlign.center,
                   style: TextStyle(
                       fontSize: 40,
                       fontWeight: FontWeight.bold,

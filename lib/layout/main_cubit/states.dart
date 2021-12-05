@@ -22,6 +22,8 @@ class MainLayGlassTypeSelected extends MainLayStates {}
 
 class MainLaySugarSelected extends MainLayStates {}
 
+class MainLayCDSugarSelected extends MainLayStates {}
+
 class MainLayCoffeeTypeSelected extends MainLayStates {}
 class MainLayCoffeeLevelSelected extends MainLayStates {}
 class MainLaySingleCoffeeGlassTypeSelected extends MainLayStates {}
@@ -42,3 +44,10 @@ class MainLayFavSelected extends MainLayStates {}
 class MainLayFavOrderLoading extends MainLayStates {}
 class MainLayFavOrderExisting extends MainLayStates {}
 class MainLayFavOrderDone extends MainLayStates {}
+
+class LoadingGetDrinksDataState extends MainLayStates {}
+class SuccessGetDrinksDataState extends MainLayStates {}
+
+
+class LoadingGetOrdersDataState extends MainLayStates {}
+class SuccessGetOrdersDataState extends MainLayStates {}

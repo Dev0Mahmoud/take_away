@@ -46,14 +46,7 @@ class AdminLayout extends StatelessWidget {
                 ),
               ],
             ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  signOut(context);
-                },
-                child: const Icon(IconBroken.Logout),
-              ),
-            ],
+
           ),
           body: Padding(
             padding: const EdgeInsets.all(10.0),

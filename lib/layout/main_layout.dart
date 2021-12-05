@@ -8,6 +8,7 @@ import 'package:take_away/modules/main_modules/order_screen.dart';
 import 'package:take_away/shared/components/components.dart';
 import 'package:take_away/shared/components/constance.dart';
 import 'package:take_away/shared/network/local/cache_helper.dart';
+import 'package:take_away/shared/styles/icons.dart';
 
 import 'main_cubit/cubit.dart';
 import 'main_cubit/states.dart';
@@ -27,17 +28,23 @@ class MainLayout extends StatelessWidget {
             navigateAndFinishTo(context, const AdminLayout());
           }
           if(states is ErrorGetUserDataState){
-            MainLayCubit.get(context).getUserData();
-            MainLayCubit.get(context).getUserData();
-            if(states is ErrorGetUserDataState) {
-              CacheHelper.removeData(key: 'uId');
-              navigateAndFinishTo(context, LoginScreen());
-            }
+            CacheHelper.removeData(key: 'uId');
+            navigateAndFinishTo(context, LoginScreen());
           }
 
         },
         builder: (context, states) =>
             Scaffold(
+              appBar: AppBar(
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      signOut(context);
+                    },
+                    child: const Icon(IconBroken.Logout),
+                  ),
+                ],
+              ),
               body: Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,

@@ -41,7 +41,7 @@ Widget defaultButton(
       padding: const EdgeInsets.symmetric(horizontal: 5),
       width: width ?? double.infinity,
       decoration: BoxDecoration(
-        color: Theme.of(context).primaryColor,
+        color: color?? Theme.of(context).primaryColor,
         borderRadius: BorderRadius.circular(20),
       ),
       child: MaterialButton(
@@ -120,8 +120,10 @@ Widget defaultFormField({
   required TextInputType keyboard,
   bool isPassword = false,
   bool noInput = false,
+  TextDirection? textDirection
 }) =>
     TextFormField(
+      textDirection: textDirection,
       style: TextStyle(color:Theme.of(context).primaryColor),
       cursorColor: outLineColor,
       onChanged: onChanged,

@@ -24,6 +24,7 @@ class MainLayCubit extends Cubit<MainLayStates> {
 
   void getUserData() async{
     uId = CacheHelper.getData(key: 'uId')??CacheHelper.getData(key: 'uId');
+
     emit(LoadingGetUserDataState());
     await FirebaseFirestore.instance
         .collection('users') // ==> my Firestore collection
@@ -103,6 +104,12 @@ class MainLayCubit extends Cubit<MainLayStates> {
     forEditSugarSelected = sugarSelected;
     emit(MainLaySugarSelected());
   }
+  void coldDrinkSugarPressed(int index) {
+    coldDrinkSugarIndex = index;
+    coldDrinkSugarSelected = [false, false, false,];
+    coldDrinkSugarSelected[index] = !coldDrinkSugarSelected[index];
+    emit(MainLayCDSugarSelected());
+  }
 
 
   void coffeeTypePressed(int index) {
@@ -172,14 +179,85 @@ class MainLayCubit extends Cubit<MainLayStates> {
 
   String? otherA;
 
+  List<DrinksModel> hotDrinksMenu = [];
+
+  void getHotDrinksData() async {
+    emit(LoadingGetDrinksDataState());
+
+    await FirebaseFirestore.instance
+        .collection('hotDrinksMenu').snapshots()
+        .listen((event) {
+      hotDrinksMenu = [];
+      for (var element in event.docs) {
+        hotDrinksMenu.add(DrinksModel.fromJson(element.data()));
+      }
+      emit(SuccessGetDrinksDataState());
+    });
+
+    // await FirebaseFirestore.instance
+    //     .collection('hotDrinksMenu')
+    //     .get()
+    //     .then((value) async {
+    //   value.docs.forEach((element) {
+    //     hotDrinksMenu = [];
+    //      element.reference.snapshots().listen((event) {
+    //       drinkId.add(element.id);
+    //       hotDrinksMenu.add(DrinksModel.fromJson(element.data()));
+    //     });
+    //   });
+    //   emit(SuccessGetDrinksDataState());
+    // }).catchError((error) {
+    //   print('Error is ${error.toString()}');
+    //   emit(ErrorGetDrinksDataState());
+    // });
+  }
+
+  List<DrinksModel> coldDrinksMenu = [];
+
+  void getColdDrinksData() async {
+    emit(LoadingGetDrinksDataState());
+
+    await FirebaseFirestore.instance
+        .collection('coldDrinksMenu').snapshots()
+        .listen((event) {
+      coldDrinksMenu = [];
+      for (var element in event.docs) {
+        coldDrinksMenu.add(DrinksModel.fromJson(element.data()));
+      }
+      emit(SuccessGetDrinksDataState());
+    });
+
+    // await FirebaseFirestore.instance
+    //     .collection('hotDrinksMenu')
+    //     .get()
+    //     .then((value) async {
+    //   value.docs.forEach((element) {
+    //     hotDrinksMenu = [];
+    //      element.reference.snapshots().listen((event) {
+    //       drinkId.add(element.id);
+    //       hotDrinksMenu.add(DrinksModel.fromJson(element.data()));
+    //     });
+    //   });
+    //   emit(SuccessGetDrinksDataState());
+    // }).catchError((error) {
+    //   print('Error is ${error.toString()}');
+    //   emit(ErrorGetDrinksDataState());
+    // });
+  }
+
+
+
   void orderComplete(
       {required DrinksModel model,
       required String otherAdd,
-      }) {
+      }) async{
     emit(MainLayOrderLoading());
     if (model.drinkName == 'قهوة') {
       otherA = otherAdd;
       orderModel = OrderModel(
+        uId: uId!,
+        id: oId,
+        orderTime: TimeOfDay.now().toString(),
         otherAdd: otherAdd,
         coffeeLevel: coffeeLevel(coffeeLevelIndex),
         isDouble: isCoffeDouble(isCoffeeDouble),
@@ -192,7 +270,16 @@ class MainLayCubit extends Cubit<MainLayStates> {
         drinkImage: model.drinkImage,
         drinkName: model.drinkName,
       );
-      orders.add(orderModel!);
+      await FirebaseFirestore.instance.collection('users').doc(uId)
+          .collection('orders')
+          .doc('${orderModel!.id}')
+          .set(orderModel!.toMap())
+          .then((value) {
+        CacheHelper.saveData(key: 'oId', value: ++oId);
+        emit(MainLayOrderDone());
+      }).catchError((error) {
+        print('Error is ${error.toString()}');
+      });
       coffeeTypeIndex = 1;
       coffeeLevelIndex = 1;
       singleCoffeeGlassTypeIndex = 2;
@@ -210,14 +297,28 @@ class MainLayCubit extends Cubit<MainLayStates> {
     } else {
       otherA = otherAdd;
       orderModel = OrderModel(
+          uId: uId!,
+          id: oId,
           drinkName: model.drinkName,
           drinkImage: model.drinkImage,
+          orderTime: TimeOfDay.now().toString(),
           drinkType: drinkType(drinkTypeIndex, model),
           glassType: glassType(glassTypeIndex),
           sugarType: sugarQuantity(sugarIndex),
           drinkQuantity: drinkQuantity(drinkQuantityIndex, drinkTypeIndex,model),
           otherAdd: otherAdd);
-      orders.add(orderModel!);
+      await FirebaseFirestore.instance.collection('users').doc(uId)
+          .collection('orders')
+          .doc('${orderModel!.id}')
+          .set(orderModel!.toMap())
+          .then((value) {
+        CacheHelper.saveData(key: 'oId', value: ++oId);
+        emit(MainLayOrderDone());
+      }).catchError((error) {
+        // emit(ErrorAddDrinkState());
+        print('Error is ${error.toString()}');
+      });
+      // orders.add(orderModel!);
       drinkTypeIndex = 0;
       drinkQuantityIndex = 1;
       glassTypeIndex = 2;
@@ -229,12 +330,28 @@ class MainLayCubit extends Cubit<MainLayStates> {
       emit(MainLayOrderDone());
     }
   }
+  
+  
+  void getUserOrders()async{
+    emit(LoadingGetOrdersDataState());
+     FirebaseFirestore.instance
+        .collection('users').doc(uId).collection('orders').orderBy('orderTime').snapshots()
+        .listen((event) {
+      orders = [];
+      for (var element in event.docs) {
+        orders.add(OrderModel.fromJson(element.data()));
+      }
+      emit(SuccessGetOrdersDataState());
+    });
+  }
 
-  void deleteOrder({required int index,}) {
+  void deleteOrder({required int id,}) async{
     emit(MainLayOrderDeleteLoading());
-    orderIndex = index;
-    orders.removeAt(orderIndex!);
-    emit(MainLayOrderDeleteDone());
+    await FirebaseFirestore.instance.collection('users').doc(uId)
+        .collection('orders')
+        .doc('$id')
+        .delete();
+
   }
 
 
@@ -259,8 +376,6 @@ class MainLayCubit extends Cubit<MainLayStates> {
     orders.add(favOrder[index]);
     emit(MainLayOrderDone());
   }
-
-
 
 
 

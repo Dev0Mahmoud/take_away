@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_conditional_rendering/conditional.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:take_away/data/hot_drinks_menu.dart';
 import 'package:take_away/layout/main_cubit/cubit.dart';
 import 'package:take_away/layout/main_cubit/states.dart';
 import 'package:take_away/model/drinks_model.dart';
@@ -40,7 +39,7 @@ class FavOrder extends StatelessWidget {
                     physics: const NeverScrollableScrollPhysics(),
                     itemBuilder: (context, index) => favOrderItem(
                       cubit.favOrder[index],index,
-                      HotDrinksMenu.menu[index],
+                      cubit.hotDrinksMenu[index],
                       context,),
                     separatorBuilder: (context, index) => myDivider(),
                     itemCount: cubit.favOrder.length,

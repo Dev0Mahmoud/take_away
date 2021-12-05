@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hexcolor/hexcolor.dart';
 import 'package:take_away/layout/admin_cubit/cubit.dart';
-import 'package:take_away/model/user_model.dart';
+
 import 'package:take_away/modules/admin_modules/deinks_menu/drinks_menu_admin_screen.dart';
+import 'package:take_away/modules/main_modules/login_screen/login_screen.dart';
+import 'package:take_away/modules/main_modules/order_screen.dart';
 import 'package:take_away/shared/components/components.dart';
+import 'package:take_away/shared/components/constance.dart';
 import 'package:take_away/shared/styles/icons.dart';
 
 class AdminNavBar extends StatelessWidget {
@@ -35,7 +38,8 @@ class AdminNavBar extends StatelessWidget {
                   alignment: AlignmentDirectional.bottomEnd,
                   children: [
                     ClipOval(
-                      child: accountImage == ''? const Icon(IconBroken.Profile,size: 70,) : Image.network(
+                      child: accountImage == ''?
+                      const Icon(IconBroken.Profile,size: 70,) : Image.network(
                         accountImage!,
                         width: 90,
                         height: 90,
@@ -63,7 +67,7 @@ class AdminNavBar extends StatelessWidget {
                                           SimpleDialogOption(
                                             child: Row(
                                               mainAxisAlignment:
-                                                  MainAxisAlignment.center,
+                                                  MainAxisAlignment.end,
                                               children: const [
                                                 Text(
                                                   'صورة من عندك',
@@ -87,6 +91,8 @@ class AdminNavBar extends StatelessWidget {
                                           ),
                                           SimpleDialogOption(
                                             child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.end,
                                               children: const [
                                                 Text('كاميرا',
                                                     textAlign: TextAlign.center,
@@ -99,8 +105,6 @@ class AdminNavBar extends StatelessWidget {
                                                   Icons.camera_sharp,
                                                 ),
                                               ],
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
                                             ),
                                             onPressed: () {
                                               AdminCubit.get(context)
@@ -111,7 +115,30 @@ class AdminNavBar extends StatelessWidget {
                                           SimpleDialogOption(
                                             child: Row(
                                               mainAxisAlignment:
-                                                  MainAxisAlignment.center,
+                                                  MainAxisAlignment.end,
+                                              children: const [
+                                                Text('إمسح الصورة خالص',
+                                                    textAlign: TextAlign.center,
+                                                    style:
+                                                        TextStyle(fontSize: 18)),
+                                                SizedBox(
+                                                  width: 10,
+                                                ),
+                                                Icon(
+                                                  Icons.delete,
+                                                ),
+                                              ],
+                                            ),
+                                            onPressed: () {
+                                              AdminCubit.get(context)
+                                                  .deleteProfileImage();
+                                              Navigator.pop(context);
+                                            },
+                                          ),
+                                          SimpleDialogOption(
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.end,
                                               children: const [
                                                 Text('لا خلاص',
                                                     textAlign: TextAlign.center,
@@ -159,6 +186,25 @@ class AdminNavBar extends StatelessWidget {
             title: const Text('قائمة المشروبات',style: TextStyle(color: Colors.black),),
             onTap: (){
               navigateTo(context, const DrinksMenuAdminScreen() );
+            },
+
+          ),
+
+          ListTile(
+            leading: const Icon(FontAwesomeIcons.user),
+            title: const Text('واجهة المستخدم',style: TextStyle(color: Colors.black),),
+            onTap: (){
+              navigateTo(context, const OrderScreen());
+            },
+
+          ),
+
+          ListTile(
+            leading: const Icon(FontAwesomeIcons.signOutAlt),
+            title: const Text('تسجيل خروج',style: TextStyle(color: Colors.black),),
+            onTap: (){
+              signOut(context);
+              navigateTo(context,LoginScreen());
             },
 
           ),

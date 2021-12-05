@@ -68,6 +68,22 @@ List<Widget> sugarChildren = const [
   ),
 ];
 
+
+int coldDrinkSugarIndex = 1;
+List<bool> coldDrinkSugarSelected = [ false,true, false, ];
+List<Widget> coldDrinkSugarChildren = const [
+  Padding(
+    padding: EdgeInsetsDirectional.only(start: 5),
+    child: Text('زيادة'),
+  ),
+  Text('مظبوط'),
+  Padding(
+    padding: EdgeInsetsDirectional.only(end: 5),
+    child: Text('خفيف'),
+  ),
+];
+
+
 int coffeeTypeIndex = 1;
 List<bool> coffeeTypeSelected = [false, true];
 List<bool> forEditCoffeeTypeSelected = [false, true];
@@ -232,6 +248,23 @@ String sugarQuantity(int index) {
       sugar = 'سكر مظبوط';
       break;
     case 3:
+      sugar = 'سكر خفيف';
+      break;
+    default:
+      'محددش سكر';
+  }
+  return sugar;
+}
+String coldDrinkSugarQuantity(int index) {
+  String sugar = '';
+  switch (index) {
+    case 0:
+      sugar = 'سكر زيادة';
+      break;
+    case 1:
+      sugar = 'سكر مظبوط';
+      break;
+    case 2:
       sugar = 'سكر خفيف';
       break;
     default:

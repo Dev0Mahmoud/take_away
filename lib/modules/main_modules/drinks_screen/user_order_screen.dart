@@ -4,7 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_conditional_rendering/conditional.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:take_away/data/hot_drinks_menu.dart';
 import 'package:take_away/layout/main_cubit/cubit.dart';
 import 'package:take_away/layout/main_cubit/states.dart';
 import 'package:take_away/model/drinks_model.dart';
@@ -19,113 +18,115 @@ class UserOrder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<MainLayCubit, MainLayStates>(
-        listener: (context, state) {
-      if (state is MainLayOrderDeleteDone) {
-        showToast(state: ToastStates.ERROR, msg: 'طلبك إتلغي');
-        Fluttertoast.cancel();
-      }
-      if (state is MainLayFavOrderExisting) {
-        showToast(state: ToastStates.ERROR, msg: 'طلبك المفضل موجود');
-        Fluttertoast.cancel();
-      }
-      if (state is MainLayFavOrderDone) {
-        showToast(state: ToastStates.WARNING, msg: 'طلبك بقي مفضل');
-        Fluttertoast.cancel();
-      }
-    }, builder: (context, state) {
-      var cubit = MainLayCubit.get(context);
-      return Scaffold(
-        appBar: AppBar(
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: const [
-              Text(
-                'طلباتي',
-                style: TextStyle(fontSize: 33),
-              ),
-              SizedBox(
-                width: 30,
-              ),
-              Icon(FontAwesomeIcons.clipboardList)
-            ],
-          ),
-          actions: [
-            Padding(
-              padding: const EdgeInsetsDirectional.only(end: 10),
-              child: IconButton(onPressed: (){
-                navigateTo(context, const FavOrder());
-              }, icon: const Icon(IconBroken.Heart,size: 40,)),
-            )
-          ],
-        ),
-        body: Conditional.single(
-            conditionBuilder: (context) =>
-                cubit.orders.isNotEmpty,
-            widgetBuilder: (BuildContext context) =>
-                SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  reverse: true,
-              child: ListView.separated(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemBuilder: (context, index) => orderItem(
-                    cubit.orders[index],index,
-                    HotDrinksMenu.menu[index],
-                    context,),
-                separatorBuilder: (context, index) => myDivider(),
-                itemCount: cubit.orders.length,
-              ),
-            ),
-            fallbackBuilder: (context) =>
-                Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                  const CircularProgressIndicator(),
-                  const SizedBox(
-                    height: 30,
-                  ),
+    return Builder(
+      builder: (context) {
+        MainLayCubit.get(context).getUserOrders();
+        return BlocConsumer<MainLayCubit, MainLayStates>(
+            listener: (context, state) {
+          if (state is MainLayOrderDeleteDone) {
+            showToast(state: ToastStates.ERROR, msg: 'طلبك إتلغي');
+            Fluttertoast.cancel();
+          }
+          if (state is MainLayFavOrderExisting) {
+            showToast(state: ToastStates.ERROR, msg: 'طلبك المفضل موجود');
+            Fluttertoast.cancel();
+          }
+          if (state is MainLayFavOrderDone) {
+            showToast(state: ToastStates.WARNING, msg: 'طلبك بقي مفضل');
+            Fluttertoast.cancel();
+          }
+        }, builder: (context, state) {
+          var cubit = MainLayCubit.get(context);
+          return Scaffold(
+            appBar: AppBar(
+              title: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [
                   Text(
-                    'في إنتظار طلباتك',
-                    style: TextStyle(
-                        fontSize: 50,
-                        color: Theme.of(context).primaryColor),
+                    'طلباتي',
+                    style: TextStyle(fontSize: 33),
                   ),
-                    ],
+                  SizedBox(
+                    width: 30,
+                  ),
+                  Icon(FontAwesomeIcons.clipboardList)
+                ],
+              ),
+              actions: [
+                Padding(
+                  padding: const EdgeInsetsDirectional.only(end: 10),
+                  child: IconButton(onPressed: (){
+                    navigateTo(context, const FavOrder());
+                  }, icon: const Icon(IconBroken.Heart,size: 40,)),
+                )
+              ],
+            ),
+            body: Conditional.single(
+                conditionBuilder: (context) =>
+                    cubit.orders.isNotEmpty,
+                widgetBuilder: (BuildContext context) =>
+                    SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      reverse: true,
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemBuilder: (context, index) => orderItem(
+                        cubit.orders[index],index,
+                        context,),
+                    itemCount: cubit.orders.length,
                   ),
                 ),
-            context: context
-        ),
-      );
-    });
+                fallbackBuilder: (context) =>
+                    Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                      const CircularProgressIndicator(),
+                      const SizedBox(
+                        height: 30,
+                      ),
+                      Text(
+                        'في إنتظار طلباتك',
+                        style: TextStyle(
+                            fontSize: 50,
+                            color: Theme.of(context).primaryColor),
+                      ),
+                        ],
+                      ),
+                    ),
+                context: context
+            ),
+          );
+        });
+      }
+    );
   }
 }
 
-Widget orderItem(OrderModel model,int index, DrinksModel dModel, context) {
+Widget orderItem(OrderModel model,int index, context) {
   var cubit = MainLayCubit.get(context);
   TextEditingController otherAddController = TextEditingController();
   otherAddController.text = model.otherAdd!;
 
-  return Container(
-    padding: const EdgeInsets.symmetric(vertical: 5),
-    clipBehavior: Clip.hardEdge,
-    decoration: BoxDecoration(
-        borderRadius: BorderRadiusDirectional.circular(50)
-    ),
-    child: Card(
-      shadowColor: Colors.grey.withOpacity(.3),
-      elevation: 3,
-      margin: const EdgeInsets.symmetric(vertical: 2),
-      color: Colors.orange.withOpacity(.1),
-      child: Padding(
-        padding: const EdgeInsets.all(10.0),
+  return Padding(
+    padding: const EdgeInsets.all(8.0),
+    child: Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+          borderRadius: BorderRadiusDirectional.circular(20)
+      ),
+      child: Card(
+        shadowColor: Colors.grey.withOpacity(.3),
+        elevation: 3,
+        margin: const EdgeInsets.symmetric(vertical: 2),
+        color: Colors.orange.withOpacity(.1),
         child: Row(
           children: [
             Image(
               image: NetworkImage(model.drinkImage),
-              width: 80,
-              height: 80,
+              width: 90,
+              height: 90,
               fit: BoxFit.cover,
             ),
             const SizedBox(
@@ -181,7 +182,7 @@ Widget orderItem(OrderModel model,int index, DrinksModel dModel, context) {
                                     label: 'أيوة',
                                     fontSize: 17,
                                     onPressed: () {
-                                      cubit.deleteOrder(index: index);
+                                      cubit.deleteOrder(id: model.id);
                                       Navigator.pop(context);
                                     },
                                     context: context,

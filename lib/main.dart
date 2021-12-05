@@ -21,6 +21,8 @@ void main() async{
   Bloc.observer = MyBlocObserver();
   await CacheHelper.init();
   Widget widget;
+  dId = 0;
+  oId = 0;
   uId = CacheHelper.getData(key: 'uId')??CacheHelper.getData(key: 'uId');
   if(uId != null){
 
@@ -43,10 +45,10 @@ class MyApp extends StatelessWidget
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (BuildContext context) => MainLayCubit(),
+          create: (BuildContext context) => MainLayCubit()..getHotDrinksData()..getColdDrinksData(),
         ),
         BlocProvider(
-          create: (BuildContext context) => AdminCubit(),
+          create: (BuildContext context) => AdminCubit()..getHotDrinksData()..getColdDrinksData(),
         ),
       ],
       child: BlocConsumer<MainLayCubit, MainLayStates>(
