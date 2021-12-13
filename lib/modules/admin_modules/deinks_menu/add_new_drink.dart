@@ -19,6 +19,7 @@ class AddNewDrink extends StatelessWidget {
       builder: (context, state) {
         var cubit = AdminCubit.get(context);
         TextEditingController drinkNameController = TextEditingController();
+        TextEditingController drinkPriceController = TextEditingController();
         var formKey = GlobalKey<FormState>();
         return Scaffold(
           body: Center(
@@ -129,55 +130,76 @@ class AddNewDrink extends StatelessWidget {
                                     ],
                                   ));
                         },
-                        child: Container(
-                          clipBehavior: Clip.antiAlias,
-                          height: 300,
-                          width: 300,
-                          decoration: BoxDecoration(
-                              color: Theme.of(context)
-                                  .primaryColor
-                                  .withOpacity(0.4),
-                              borderRadius:
-                              BorderRadiusDirectional
-                                  .circular(10)),
-                          child: Center(
-                              child:
-                              state is SuccessDrinkImagePickedState ?
-                              const CircularProgressIndicator():
-                              Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  if(cubit.drinkImageUrl == '')
-                                    Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children:  [
-                                        Padding(
-                                          padding:
-                                          const EdgeInsetsDirectional
-                                              .only(
-                                              end: 20.0,
-                                              bottom: 40),
-                                          child: Icon(
-                                            isCold ?FontAwesomeIcons.wineGlass : FontAwesomeIcons.coffee,
-                                            size: 90,
-                                          ),
-                                        ),
+                          child: Stack(
+                            alignment: AlignmentDirectional.topCenter,
+                          children: [
 
-                                        const Text(
-                                          'صورة المشروب الجديد',
-                                          style: TextStyle(fontSize: 30),
+                            Container(
+                              clipBehavior: Clip.antiAlias,
+                              height: 300,
+                              width: 300,
+                              decoration: BoxDecoration(
+                                  color: Theme.of(context)
+                                      .primaryColor
+                                      .withOpacity(0.4),
+                                  borderRadius:
+                                  BorderRadiusDirectional
+                                      .circular(10)),
+                              child: Center(
+                                  child:
+                                  state is SuccessDrinkImagePickedState ?
+                                  const CircularProgressIndicator():
+                                  Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      if(cubit.drinkImageUrl == '')
+                                        Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children:  [
+                                            Padding(
+                                              padding:
+                                              const EdgeInsetsDirectional
+                                                  .only(
+                                                  end: 20.0,
+                                                  bottom: 40),
+                                              child: Icon(
+                                                isCold ?FontAwesomeIcons.wineGlass : FontAwesomeIcons.coffee,
+                                                size: 90,
+                                              ),
+                                            ),
+
+                                            const Text(
+                                              'صورة المشروب الجديد',
+                                              style: TextStyle(fontSize: 30),
+                                            ),
+                                          ],
                                         ),
-                                      ],
-                                    ),
-                                  if(cubit.drinkImageUrl != '')
-                                    Image.network(
-                                      cubit.drinkImageUrl!,
-                                      height: 295,
-                                      width: 295,
-                                      fit: BoxFit.cover,
-                                    ),
-                                ],
-                              )),
+                                      if(cubit.drinkImageUrl != '')
+                                        Image.network(
+                                          cubit.drinkImageUrl!,
+                                          height: 295,
+                                          width: 295,
+                                          fit: BoxFit.cover,
+                                        ),
+                                    ],
+                                  )),
+                            ),
+                            if(cubit.drinkImageUrl == '')
+                            Container(
+                              width: 300,
+                              color: Colors.black.withOpacity(0.7),
+                              child: const Text(
+                                'اضغط لإضافة الصورة',
+                                style: TextStyle(
+                                  fontSize: 25,
+                                  color: Colors.white,
+                                ),
+                                textAlign: TextAlign.center,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       const SizedBox(
@@ -191,7 +213,24 @@ class AddNewDrink extends StatelessWidget {
                         keyboard: TextInputType.text,
                         validate: (String? value) {
                           if (value!.isEmpty) {
-                            return '!! هتعمل مشروب جديد إزاي من غير إسم أو صورة';
+                            return '!! هتعمل مشروب جديد إزاي من غير إسم أو سعر أو صورة';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      defaultFormField(
+                        context: context,
+
+                        controller: drinkPriceController,
+                        hintText: 'بالإنجليزي معلش',
+                        label: 'سعر المشروب الجديد',
+                        keyboard: TextInputType.number,
+                        validate: (String? value) {
+                          if (value!.isEmpty) {
+                            return '!! هتعمل مشروب جديد إزاي من غير إسم أو سعر أو صورة';
                           }
                           return null;
                         },
@@ -210,12 +249,14 @@ class AddNewDrink extends StatelessWidget {
                                           '') {
                                         if(isCold){
                                   cubit.addNewColdDrink(
+                                    price: int.parse(drinkPriceController.text),
                                     drinkName: drinkNameController.text,
                                     drinkImage: cubit.drinkImageUrl!,
                                   );
                                 }else {
                                           cubit.addNewHotDrink(
-                                            drinkName: drinkNameController.text,
+                                            price: int.parse(drinkPriceController.text),
+                                            drinkName: drinkNameController.text ,
                                             drinkImage: cubit.drinkImageUrl!,
                                           );
                                         }

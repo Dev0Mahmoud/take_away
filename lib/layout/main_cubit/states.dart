@@ -51,3 +51,15 @@ class SuccessGetDrinksDataState extends MainLayStates {}
 
 class LoadingGetOrdersDataState extends MainLayStates {}
 class SuccessGetOrdersDataState extends MainLayStates {}
+
+
+class LoadingProfileImagePickedState extends MainLayStates {}
+class SuccessProfileImagePickedState extends MainLayStates {}
+class ErrorProfileImagePickedState extends MainLayStates {}
+
+
+class SuccessUploadProfileImageState extends MainLayStates {}
+class ErrorUploadProfileImageState extends MainLayStates {}
+
+
+class ErrorUpdateUserDataState extends MainLayStates {}

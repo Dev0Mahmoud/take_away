@@ -204,7 +204,7 @@ class AdminNavBar extends StatelessWidget {
             title: const Text('تسجيل خروج',style: TextStyle(color: Colors.black),),
             onTap: (){
               signOut(context);
-              navigateTo(context,LoginScreen());
+              navigateAndFinishTo(context,LoginScreen());
             },
 
           ),

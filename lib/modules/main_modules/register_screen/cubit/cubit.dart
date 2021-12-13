@@ -81,6 +81,8 @@ class RegisterCubit extends Cubit<RegisterStates> {
       phone: phone,
       uId: uId,
       admin: false,
+      hasProfileImage: false,
+
     );
    await FirebaseFirestore.instance
         .collection('users')

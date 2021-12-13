@@ -4,6 +4,7 @@ import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:take_away/data/dialoge_options.dart';
 import 'package:take_away/layout/admin_cubit/states.dart';
 import 'package:take_away/model/drinks_model.dart';
 import 'package:take_away/model/order_model.dart';
@@ -40,7 +41,6 @@ class AdminCubit extends Cubit<AdminStates> {
       emit(ErrorGetUserDataState());
     });
   }
-
 
   int mainCurrentIndex = 0;
 
@@ -130,6 +130,7 @@ class AdminCubit extends Cubit<AdminStates> {
       phone: userModel!.phone,
       name: userModel!.name,
       image: imageUrl,
+      hasProfileImage: true,
     );
     FirebaseFirestore.instance
         .collection('users')
@@ -144,6 +145,7 @@ class AdminCubit extends Cubit<AdminStates> {
   }
 
 
+
   void deleteProfileImage() async {
     await firebase_storage.FirebaseStorage.instance
         .refFromURL(userModel!.image!)
@@ -156,6 +158,7 @@ class AdminCubit extends Cubit<AdminStates> {
       phone: userModel!.phone,
       name: userModel!.name,
       image: '',
+      hasProfileImage: false,
     );
     FirebaseFirestore.instance
         .collection('users')
@@ -177,8 +180,9 @@ class AdminCubit extends Cubit<AdminStates> {
     emit(LoadingGetDrinksDataState());
 
     await FirebaseFirestore.instance
-        .collection('hotDrinksMenu').snapshots()
-    .listen((event) {
+        .collection('hotDrinksMenu')
+        .snapshots()
+        .listen((event) {
       hotDrinksMenu = [];
       for (var element in event.docs) {
         hotDrinksMenu.add(DrinksModel.fromJson(element.data()));
@@ -207,9 +211,11 @@ class AdminCubit extends Cubit<AdminStates> {
   void addNewHotDrink({
     required String drinkName,
     required String drinkImage,
+    required int price,
   }) async {
     emit(LoadingAddDrinkState());
     DrinksModel model = DrinksModel(
+      price: price,
       id: dId,
       drinkName: drinkName,
       drinkImage: drinkImage,
@@ -219,9 +225,9 @@ class AdminCubit extends Cubit<AdminStates> {
         .doc('${model.id}')
         .set(model.toMap())
         .then((value) {
-          CacheHelper.saveData(key: 'dId', value: ++dId);
-          drinkImageUrl = '';
-          getHotDrinksData();
+      CacheHelper.saveData(key: 'dId', value: ++dId);
+      drinkImageUrl = '';
+      getHotDrinksData();
       emit(SuccessAddDrinkState());
     }).catchError((error) {
       emit(ErrorAddDrinkState());
@@ -229,8 +235,14 @@ class AdminCubit extends Cubit<AdminStates> {
     });
   }
 
-  void updateHotDrinkData({required String imageUrl,required String drinkName,required int id,}) {
+  void updateHotDrinkData({
+    required String imageUrl,
+    required String drinkName,
+    required int price,
+    required int id,
+  }) {
     DrinksModel model = DrinksModel(
+      price: price,
       id: id,
       drinkName: drinkName,
       drinkImage: imageUrl,
@@ -247,7 +259,9 @@ class AdminCubit extends Cubit<AdminStates> {
     });
   }
 
-  void deleteHotDrink({required int id,}) {
+  void deleteHotDrink({
+    required int id,
+  }) {
     FirebaseFirestore.instance
         .collection('hotDrinksMenu')
         .doc('$id')
@@ -264,7 +278,8 @@ class AdminCubit extends Cubit<AdminStates> {
     emit(LoadingGetDrinksDataState());
 
     await FirebaseFirestore.instance
-        .collection('coldDrinksMenu').snapshots()
+        .collection('coldDrinksMenu')
+        .snapshots()
         .listen((event) {
       coldDrinksMenu = [];
       for (var element in event.docs) {
@@ -294,10 +309,11 @@ class AdminCubit extends Cubit<AdminStates> {
   void addNewColdDrink({
     required String drinkName,
     required String drinkImage,
+    required int price,
   }) async {
-
     emit(LoadingAddDrinkState());
     DrinksModel model = DrinksModel(
+      price: price,
       id: dId,
       drinkName: drinkName,
       drinkImage: drinkImage,
@@ -317,8 +333,14 @@ class AdminCubit extends Cubit<AdminStates> {
     });
   }
 
-  void updateColdDrinkData({required String imageUrl,required String drinkName,required int id,}) {
+  void updateColdDrinkData({
+    required String imageUrl,
+    required String drinkName,
+    required int price,
+    required int id,
+  }) {
     DrinksModel model = DrinksModel(
+      price: price,
       id: id,
       drinkName: drinkName,
       drinkImage: imageUrl,
@@ -335,7 +357,9 @@ class AdminCubit extends Cubit<AdminStates> {
     });
   }
 
-  void deleteColdDrink({required int id,}) {
+  void deleteColdDrink({
+    required int id,
+  }) {
     FirebaseFirestore.instance
         .collection('coldDrinksMenu')
         .doc('$id')
@@ -351,6 +375,7 @@ class AdminCubit extends Cubit<AdminStates> {
   var drinkImagePicker = ImagePicker();
   File? drinkImage;
   String? drinkImageUrl = '';
+
   void getDrinkImageFromGallery() async {
     emit(LoadingDrinkImagePickedState());
     final pickedFile =
@@ -376,7 +401,6 @@ class AdminCubit extends Cubit<AdminStates> {
       emit(ErrorDrinkImagePickedState());
     }
   }
-
 
   void uploadDrinkImage() {
     // drinksModel!.drinkImage != ''
@@ -404,34 +428,172 @@ class AdminCubit extends Cubit<AdminStates> {
   }
 
 
+  OrderModel? orderModel;
+
+  void orderDone(
+      {
+        required OrderModel model,
+      }) async{
+    emit(LoadingOrderDoneState());
+    if (model.isCold){
+      orderModel = OrderModel(
+          isNewOrder: false,
+          isCold: model.isCold,
+          uId: model.uId,
+          id: model.id,
+          coldDrinkSugarType: model.coldDrinkSugarType,
+          drinkName: model.drinkName,
+          drinkImage: model.drinkImage,
+          orderTime: model.orderTime,
+          otherAdd: model.otherAdd);
+      await FirebaseFirestore.instance.collection('users').doc(model.uId)
+          .collection('doneOrders')
+          .doc('${orderModel!.id}')
+          .set(orderModel!.toMap())
+          .then((value) {
+        getDoneOrders();
+        getUsersDetails(uId: model.uId);
+        emit(OrderDone());
+      }).catchError((error) {
+        // emit(ErrorAddDrinkState());
+        print('Error is ${error.toString()}');
+      });
+      emit(OrderDone());
+    }
+    else{
+      if (model.drinkName == 'قهوة') {
+         orderModel = OrderModel(
+          isCold: model.isCold,
+          isNewOrder: false,
+          uId: model.uId,
+          id: model.id,
+          orderTime: model.orderTime,
+          otherAdd: model.otherAdd,
+          coffeeLevel: model.coffeeLevel,
+          isDouble: model.isDouble,
+          doubleGlassType: model.doubleGlassType,
+          coffeeType: model.coffeeType,
+          cSugarType: model.cSugarType,
+          sCGlassType: model.sCGlassType,
+          drinkImage: model.drinkImage,
+          drinkName: model.drinkName,
+        );
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(model.uId)
+            .collection('doneOrders')
+            .doc('${orderModel!.id}')
+            .set(orderModel!.toMap())
+            .then((value) {
+          getDoneOrders();
+          getUsersDetails(uId: model.uId);
+          emit(OrderDone());
+        }).catchError((error) {
+          print('Error is ${error.toString()}');
+        });
+        emit(OrderDone());
+      } else {
+         orderModel = OrderModel(
+            isNewOrder: false,
+            isCold: model.isCold,
+            uId: model.uId,
+            id: model.id,
+            drinkName: model.drinkName,
+            drinkImage: model.drinkImage,
+            orderTime: model.orderTime,
+            drinkType: model.drinkType,
+            glassType: model.glassType,
+            sugarType: model.sugarType,
+            drinkQuantity: model.drinkQuantity,
+            otherAdd: model.otherAdd);
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(model.uId)
+            .collection('doneOrders')
+            .doc('${orderModel!.id}')
+            .set(orderModel!.toMap())
+            .then((value) {
+              getDoneOrders();
+              getUsersDetails(uId: model.uId);
+          emit(OrderDone());
+        }).catchError((error) {
+
+          print('Error is ${error.toString()}');
+        });
+        emit(OrderDone());
+      }
+    }
+  }
+
   List<OrderModel> newOrders = [];
 
-  void getUserOrders()async{
+  List<OrderModel> doneOrders = [];
+
+  void getUserOrders() async {
     emit(LoadingGetOrdersDataState());
 
     FirebaseFirestore.instance
-        .collection('users').get().asStream().listen((event) {
+        .collection('users')
+        .get()
+        .asStream()
+        .listen((event) {
       for (var user in event.docs) {
-
-        user.reference.collection('orders').get().asStream().listen((event) {
-          newOrders = [];
-          for(var order in event.docs){
-            newOrders.add(OrderModel.fromJson(order.data()));
-          }
-          emit(SuccessGetOrdersDataState());
+        user.reference.snapshots().listen((event) {
+          event.reference.collection('orders').snapshots().listen((event) {
+            newOrders = [];
+            for (var order in event.docs) {
+              newOrders.add(OrderModel.fromJson(order.data()));
+            }
+            emit(SuccessGetOrdersDataState());
+          });
         });
+      }
+    });
+  }
 
-    }
+  void deleteNewOrder({required OrderModel model}) async{
+    emit(DoneOrderDeleteLoading());
+    await FirebaseFirestore.instance.collection('users').doc(model.uId)
+        .collection('orders')
+        .doc('${model.id}')
+        .delete().then((value) {
+      getDoneOrders();
+      emit(DoneOrderDeleteDone());
+    });
+
+  }
+
+  void getDoneOrders() async {
+    emit(LoadingGetDoneOrdersState());
+
+    FirebaseFirestore.instance
+        .collection('users')
+        .get()
+        .asStream()
+        .listen((event) {
+      for (var user in event.docs) {
+        user.reference.snapshots().listen((event) {
+          event.reference.collection('doneOrders').snapshots().listen((event) {
+            doneOrders = [];
+            for (var order in event.docs) {
+              doneOrders.add(OrderModel.fromJson(order.data()));
+            }
+            emit(SuccessGetDoneOrdersState());
+          });
         });
+      }
+    });
   }
 
   UserModel? userDetails;
-  void getUsersDetails({required String uId})async{
 
+  void getUsersDetails({required String uId}) async {
     await FirebaseFirestore.instance
-        .collection('users').doc(uId).get().then((value) {
-          userDetails = UserModel.fromJson(value.data()!);
-    }).catchError((Error){});
+        .collection('users')
+        .doc(uId)
+        .get()
+        .then((value) {
+      userDetails = UserModel.fromJson(value.data()!);
+    }).catchError((Error) {});
   }
-
 }

@@ -39,8 +39,17 @@ class SuccessGetDrinksDataState extends AdminStates {}
 class ErrorGetDrinksDataState extends AdminStates {}
 
 
+class LoadingOrderDoneState extends AdminStates {}
+class OrderDone extends AdminStates {}
+
 class LoadingGetOrdersDataState extends AdminStates {}
 class SuccessGetOrdersDataState extends AdminStates {}
+
+class LoadingGetDoneOrdersState extends AdminStates {}
+class SuccessGetDoneOrdersState extends AdminStates {}
+
+class DoneOrderDeleteLoading extends AdminStates {}
+class DoneOrderDeleteDone extends AdminStates {}
 
 
 

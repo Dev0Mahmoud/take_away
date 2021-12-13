@@ -24,6 +24,7 @@ class UserOrder extends StatelessWidget {
         return BlocConsumer<MainLayCubit, MainLayStates>(
             listener: (context, state) {
           if (state is MainLayOrderDeleteDone) {
+            MainLayCubit.get(context).getUserOrders();
             showToast(state: ToastStates.ERROR, msg: 'طلبك إتلغي');
             Fluttertoast.cancel();
           }
@@ -37,67 +38,102 @@ class UserOrder extends StatelessWidget {
           }
         }, builder: (context, state) {
           var cubit = MainLayCubit.get(context);
-          return Scaffold(
-            appBar: AppBar(
-              title: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  Text(
-                    'طلباتي',
-                    style: TextStyle(fontSize: 33),
-                  ),
-                  SizedBox(
-                    width: 30,
-                  ),
-                  Icon(FontAwesomeIcons.clipboardList)
-                ],
-              ),
-              actions: [
-                Padding(
-                  padding: const EdgeInsetsDirectional.only(end: 10),
-                  child: IconButton(onPressed: (){
-                    navigateTo(context, const FavOrder());
-                  }, icon: const Icon(IconBroken.Heart,size: 40,)),
-                )
-              ],
-            ),
-            body: Conditional.single(
-                conditionBuilder: (context) =>
-                    cubit.orders.isNotEmpty,
-                widgetBuilder: (BuildContext context) =>
-                    SingleChildScrollView(
-                      physics: const BouncingScrollPhysics(),
-                      reverse: true,
-                  child: ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemBuilder: (context, index) => orderItem(
-                        cubit.orders[index],index,
-                        context,),
-                    itemCount: cubit.orders.length,
-                  ),
-                ),
-                fallbackBuilder: (context) =>
-                    Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                      const CircularProgressIndicator(),
-                      const SizedBox(
-                        height: 30,
+          return Container(
+            color: Colors.transparent,
+             child: Conditional.single(
+                  conditionBuilder: (context) =>
+                  cubit.orders.isNotEmpty,
+                  widgetBuilder: (BuildContext context) =>
+                      ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemBuilder: (context, index) => orderItem(
+                          cubit.orders[index],index,
+                          context,),
+                        itemCount: cubit.orders.length,
                       ),
-                      Text(
-                        'في إنتظار طلباتك',
-                        style: TextStyle(
-                            fontSize: 50,
-                            color: Theme.of(context).primaryColor),
+                  fallbackBuilder: (context) =>
+                      Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              FontAwesomeIcons.hourglassHalf,
+                              color: Theme.of(context).primaryColor,
+                              size: 80,
+                            ),
+                            const SizedBox(
+                              height: 30,
+                            ),
+                            Text(
+                              'في إنتظار طلباتك',
+                              style: TextStyle(
+                                  fontSize: 50,
+                                  color: Theme.of(context).primaryColor),
+                            ),
+                          ],
+                        ),
                       ),
-                        ],
-                      ),
-                    ),
-                context: context
-            ),
+                  context: context
+              )
           );
+          //   Scaffold(
+          //   appBar: AppBar(
+          //     title: Row(
+          //       mainAxisAlignment: MainAxisAlignment.center,
+          //       children: const [
+          //         Text(
+          //           'طلباتي',
+          //           style: TextStyle(fontSize: 33),
+          //         ),
+          //         SizedBox(
+          //           width: 30,
+          //         ),
+          //         Icon(FontAwesomeIcons.clipboardList)
+          //       ],
+          //     ),
+          //     actions: [
+          //       Padding(
+          //         padding: const EdgeInsetsDirectional.only(end: 10),
+          //         child: IconButton(onPressed: (){
+          //           navigateTo(context, const FavOrder());
+          //         }, icon: const Icon(IconBroken.Heart,size: 40,)),
+          //       )
+          //     ],
+          //   ),
+          //   body: Conditional.single(
+          //       conditionBuilder: (context) =>
+          //           cubit.orders.isNotEmpty,
+          //       widgetBuilder: (BuildContext context) =>
+          //           ListView.builder(
+          //             shrinkWrap: true,
+          //             physics: const NeverScrollableScrollPhysics(),
+          //             itemBuilder: (context, index) => orderItem(
+          //                 cubit.orders[index],index,
+          //                 context,),
+          //             itemCount: cubit.orders.length,
+          //           ),
+          //       fallbackBuilder: (context) =>
+          //           Center(
+          //             child: Column(
+          //               mainAxisSize: MainAxisSize.min,
+          //               children: [
+          //             const CircularProgressIndicator(),
+          //             const SizedBox(
+          //               height: 30,
+          //             ),
+          //             Text(
+          //               'في إنتظار طلباتك',
+          //               style: TextStyle(
+          //                   fontSize: 50,
+          //                   color: Theme.of(context).primaryColor),
+          //             ),
+          //               ],
+          //             ),
+          //           ),
+          //       context: context
+          //   ),
+          // );
         });
       }
     );
@@ -133,20 +169,32 @@ Widget orderItem(OrderModel model,int index, context) {
               width: 20,
             ),
             Expanded(
-              child: model.drinkName == 'قهوة' ? Text(
-                'طلبك ${model.sCGlassType} ${model.doubleGlassType} قهوة ${model.isDouble} بن '
-                    '${model.coffeeType} ${model.coffeeLevel} ${model.cSugarType} .. ${model.otherAdd} ٫ جايلك حالاً',
+              child:
+              model.isCold ?
+              Text(
+                'طلبك ${model.drinkName} ${model.coldDrinkSugarType}',
                 style: TextStyle(
-                    fontSize: 20,
+                    fontSize: 17,
                     fontWeight: FontWeight.bold,
                     color: Theme.of(context).primaryColor),
               )
-                  : Text(
+              :
+              model.drinkName == 'قهوة' ?
+              Text(
+                'طلبك ${model.sCGlassType} ${model.doubleGlassType} قهوة ${model.isDouble} بن '
+                    '${model.coffeeType} ${model.coffeeLevel} ${model.cSugarType} .. ${model.otherAdd} ٫ جايلك حالاً',
+                style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).primaryColor),
+              )
+                  :
+              Text(
                 'طلبك ${model.glassType} ${model.drinkName} ${model.drinkType} '
                 '${model.drinkQuantity}  '
                 '${model.sugarType} .. ${model.otherAdd} ٫ جايلك حالاً ',
                 style: TextStyle(
-                    fontSize: 20,
+                    fontSize: 17,
                     fontWeight: FontWeight.bold,
                     color: Theme.of(context).primaryColor),
               ),

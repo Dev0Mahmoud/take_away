@@ -1,8 +1,11 @@
+import 'dart:io';
+import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:take_away/data/dialoge_options.dart';
 import 'package:take_away/layout/main_cubit/states.dart';
 import 'package:take_away/model/drinks_model.dart';
@@ -10,6 +13,7 @@ import 'package:take_away/model/order_model.dart';
 import 'package:take_away/model/user_model.dart';
 import 'package:take_away/modules/main_modules/drinks_screen/cold_drinks_screen.dart';
 import 'package:take_away/modules/main_modules/drinks_screen/hot_drinks_screen.dart';
+import 'package:take_away/modules/main_modules/drinks_screen/user_order_screen.dart';
 import 'package:take_away/shared/components/constance.dart';
 import 'package:take_away/shared/network/local/cache_helper.dart';
 
@@ -31,8 +35,8 @@ class MainLayCubit extends Cubit<MainLayStates> {
         .doc(uId)
         .get()
         .then((value) async {
-      final userModel =  UserModel.fromJson(value.data()!);
-      if(userModel.admin!) {
+       userModel =  UserModel.fromJson(value.data()!);
+      if(userModel!.admin!) {
         emit(AdminUserState());
       } else {
         emit(NormalUserState());
@@ -44,6 +48,34 @@ class MainLayCubit extends Cubit<MainLayStates> {
       emit(ErrorGetUserDataState());
     });
 
+  }
+
+  void updateUserData({
+    required String address,
+    required String email,
+    required String phone,
+    required String name,
+  }) {
+    UserModel model = UserModel(
+      admin: false,
+      address: address,
+      uId: uId,
+      email: email,
+      phone: phone,
+      name: name,
+      image: userModel!.image,
+      hasProfileImage: userModel!.hasProfileImage,
+    );
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(userModel!.uId)
+        .update(model.toMap())
+        .then((value) {
+      getUserData();
+    }).catchError((e) {
+      print('Error is ${e.toString()}');
+      emit(ErrorUpdateUserDataState());
+    });
   }
 
 
@@ -58,9 +90,106 @@ class MainLayCubit extends Cubit<MainLayStates> {
   List<Widget> bottomScreen = [
     const HotDrinksScreen(),
     const ColdDrinks(),
+    const UserOrder(),
   ];
 
+  var profilePicker = ImagePicker();
+  File? profileImage;
 
+  void getProfileImageFromGallery() async {
+    emit(LoadingProfileImagePickedState());
+    final pickedFile =
+    await profilePicker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      profileImage = File(pickedFile.path);
+      uploadProfileImage();
+      emit(SuccessProfileImagePickedState());
+    } else {
+      emit(ErrorProfileImagePickedState());
+    }
+  }
+
+  void getProfileImageFromCamera() async {
+    final pickedFile =
+    await profilePicker.pickImage(source: ImageSource.camera);
+    if (pickedFile != null) {
+      profileImage = File(pickedFile.path);
+      uploadProfileImage();
+      emit(SuccessProfileImagePickedState());
+    } else {
+      emit(ErrorProfileImagePickedState());
+    }
+  }
+
+  void uploadProfileImage() {
+    userModel!.image != ''
+        ? deleteProfileImage()
+        : emit(LoadingProfileImagePickedState());
+    firebase_storage.FirebaseStorage.instance
+        .ref()
+        .child('users/${Uri.file(profileImage!.path).pathSegments.last}')
+        .putFile(profileImage!)
+        .then((value) {
+      value.ref.getDownloadURL().then((value) {
+        updateProfileImage(imageUrl: value);
+        emit(SuccessUploadProfileImageState());
+      }).catchError((e) {
+        emit(ErrorUploadProfileImageState());
+      });
+    }).catchError((e) {
+      emit(ErrorUploadProfileImageState());
+    });
+  }
+
+  void updateProfileImage({required String imageUrl}) {
+    UserModel model = UserModel(
+      admin: false,
+      address: userModel!.address,
+      uId: userModel!.uId,
+      email: userModel!.email,
+      phone: userModel!.phone,
+      name: userModel!.name,
+      image: imageUrl,
+      hasProfileImage: true,
+    );
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(userModel!.uId)
+        .update(model.toMap())
+        .then((value) {
+      getUserData();
+    }).catchError((e) {
+      print('Error is ${e.toString()}');
+      emit(ErrorUpdateUserDataState());
+    });
+  }
+
+
+  void deleteProfileImage() async {
+    await firebase_storage.FirebaseStorage.instance
+        .refFromURL(userModel!.image!)
+        .delete();
+    UserModel model = UserModel(
+      admin: false,
+      address: userModel!.address,
+      uId: userModel!.uId,
+      email: userModel!.email,
+      phone: userModel!.phone,
+      name: userModel!.name,
+      image: '',
+      hasProfileImage: false,
+    );
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(userModel!.uId)
+        .update(model.toMap())
+        .then((value) {
+      getUserData();
+    }).catchError((e) {
+      print('Error is ${e.toString()}');
+      emit(ErrorUpdateUserDataState());
+    });
+  }
 
   void drinkTypePressed(int index) {
     drinkTypeIndex = index;
@@ -250,62 +379,21 @@ class MainLayCubit extends Cubit<MainLayStates> {
   void orderComplete(
       {required DrinksModel model,
       required String otherAdd,
+      required bool isCold,
+
       }) async{
     emit(MainLayOrderLoading());
-    if (model.drinkName == 'قهوة') {
+    if (isCold){
       otherA = otherAdd;
       orderModel = OrderModel(
-        uId: uId!,
-        id: oId,
-        orderTime: TimeOfDay.now().toString(),
-        otherAdd: otherAdd,
-        coffeeLevel: coffeeLevel(coffeeLevelIndex),
-        isDouble: isCoffeDouble(isCoffeeDouble),
-        doubleGlassType:
-        coffeeDoubleGlassType(doubleCoffeeGlassTypeIndex, isCoffeeDouble),
-        coffeeType: coffeeType(coffeeTypeIndex),
-        cSugarType: coffeeSugar(coffeeSugarIndex),
-        sCGlassType:
-        coffeeSingleGlassType(singleCoffeeGlassTypeIndex, isCoffeeDouble),
-        drinkImage: model.drinkImage,
-        drinkName: model.drinkName,
-      );
-      await FirebaseFirestore.instance.collection('users').doc(uId)
-          .collection('orders')
-          .doc('${orderModel!.id}')
-          .set(orderModel!.toMap())
-          .then((value) {
-        CacheHelper.saveData(key: 'oId', value: ++oId);
-        emit(MainLayOrderDone());
-      }).catchError((error) {
-        print('Error is ${error.toString()}');
-      });
-      coffeeTypeIndex = 1;
-      coffeeLevelIndex = 1;
-      singleCoffeeGlassTypeIndex = 2;
-      doubleCoffeeGlassTypeIndex = 1;
-      coffeeDoubleIndex = 0;
-      coffeeSugarIndex = 5;
-      coffeeTypeSelected = [false, true];
-      coffeeLevelSelected = [false, true, false];
-      singleCoffeeGlassTypeSelected = [false, false, true];
-      doubleCoffeeGlassTypeSelected = [false, true];
-      isCoffeeDouble = false;
-      coffeeDoubleSelected = [isCoffeeDouble];
-      coffeeSugarSelected = [false, false, false, false, false, true];
-      emit(MainLayOrderDone());
-    } else {
-      otherA = otherAdd;
-      orderModel = OrderModel(
+        isNewOrder: true,
+          isCold: isCold,
           uId: uId!,
           id: oId,
+          coldDrinkSugarType: coldDrinkSugarQuantity(coldDrinkSugarIndex),
           drinkName: model.drinkName,
           drinkImage: model.drinkImage,
           orderTime: TimeOfDay.now().toString(),
-          drinkType: drinkType(drinkTypeIndex, model),
-          glassType: glassType(glassTypeIndex),
-          sugarType: sugarQuantity(sugarIndex),
-          drinkQuantity: drinkQuantity(drinkQuantityIndex, drinkTypeIndex,model),
           otherAdd: otherAdd);
       await FirebaseFirestore.instance.collection('users').doc(uId)
           .collection('orders')
@@ -318,16 +406,100 @@ class MainLayCubit extends Cubit<MainLayStates> {
         // emit(ErrorAddDrinkState());
         print('Error is ${error.toString()}');
       });
-      // orders.add(orderModel!);
-      drinkTypeIndex = 0;
-      drinkQuantityIndex = 1;
-      glassTypeIndex = 2;
-      sugarIndex = 0;
-      drinkTypeSelected = [true, false,];
-      drinkQuantitySelected = [false, true, false];
-      glassTypeSelected = [false, false, true];
-      sugarSelected = [true, false, false, false];
+      coldDrinkSugarIndex = 1;
+      coldDrinkSugarSelected = [false, true, false];
       emit(MainLayOrderDone());
+    }
+    else{
+      if (model.drinkName == 'قهوة') {
+        otherA = otherAdd;
+        orderModel = OrderModel(
+          isCold: isCold,
+          isNewOrder: true,
+          uId: uId!,
+          id: oId,
+          orderTime: TimeOfDay.now().toString(),
+          otherAdd: otherAdd,
+          coffeeLevel: coffeeLevel(coffeeLevelIndex),
+          isDouble: isCoffeDouble(isCoffeeDouble),
+          doubleGlassType:
+              coffeeDoubleGlassType(doubleCoffeeGlassTypeIndex, isCoffeeDouble),
+          coffeeType: coffeeType(coffeeTypeIndex),
+          cSugarType: coffeeSugar(coffeeSugarIndex),
+          sCGlassType:
+              coffeeSingleGlassType(singleCoffeeGlassTypeIndex, isCoffeeDouble),
+          drinkImage: model.drinkImage,
+          drinkName: model.drinkName,
+        );
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(uId)
+            .collection('orders')
+            .doc('${orderModel!.id}')
+            .set(orderModel!.toMap())
+            .then((value) {
+          CacheHelper.saveData(key: 'oId', value: ++oId);
+          emit(MainLayOrderDone());
+        }).catchError((error) {
+          print('Error is ${error.toString()}');
+        });
+        coffeeTypeIndex = 1;
+        coffeeLevelIndex = 1;
+        singleCoffeeGlassTypeIndex = 2;
+        doubleCoffeeGlassTypeIndex = 1;
+        coffeeDoubleIndex = 0;
+        coffeeSugarIndex = 5;
+        coffeeTypeSelected = [false, true];
+        coffeeLevelSelected = [false, true, false];
+        singleCoffeeGlassTypeSelected = [false, false, true];
+        doubleCoffeeGlassTypeSelected = [false, true];
+        isCoffeeDouble = false;
+        coffeeDoubleSelected = [isCoffeeDouble];
+        coffeeSugarSelected = [false, false, false, false, false, true];
+        emit(MainLayOrderDone());
+      } else {
+        otherA = otherAdd;
+        orderModel = OrderModel(
+            isNewOrder: true,
+            isCold: isCold,
+            uId: uId!,
+            id: oId,
+            drinkName: model.drinkName,
+            drinkImage: model.drinkImage,
+            orderTime: TimeOfDay.now().toString(),
+            drinkType: drinkType(drinkTypeIndex, model),
+            glassType: glassType(glassTypeIndex),
+            sugarType: sugarQuantity(sugarIndex),
+            drinkQuantity:
+                drinkQuantity(drinkQuantityIndex, drinkTypeIndex, model),
+            otherAdd: otherAdd);
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(uId)
+            .collection('orders')
+            .doc('${orderModel!.id}')
+            .set(orderModel!.toMap())
+            .then((value) {
+          CacheHelper.saveData(key: 'oId', value: ++oId);
+          emit(MainLayOrderDone());
+        }).catchError((error) {
+          // emit(ErrorAddDrinkState());
+          print('Error is ${error.toString()}');
+        });
+        // orders.add(orderModel!);
+        drinkTypeIndex = 0;
+        drinkQuantityIndex = 1;
+        glassTypeIndex = 2;
+        sugarIndex = 0;
+        drinkTypeSelected = [
+          true,
+          false,
+        ];
+        drinkQuantitySelected = [false, true, false];
+        glassTypeSelected = [false, false, true];
+        sugarSelected = [true, false, false, false];
+        emit(MainLayOrderDone());
+      }
     }
   }
   
@@ -350,7 +522,10 @@ class MainLayCubit extends Cubit<MainLayStates> {
     await FirebaseFirestore.instance.collection('users').doc(uId)
         .collection('orders')
         .doc('$id')
-        .delete();
+        .delete().then((value){
+          getUserOrders();
+          emit(MainLayOrderDeleteDone());
+    });
 
   }
 

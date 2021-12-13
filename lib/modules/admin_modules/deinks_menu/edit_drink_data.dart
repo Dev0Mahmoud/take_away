@@ -20,7 +20,9 @@ class EditDrinkData extends StatelessWidget {
       builder: (context, state) {
         var cubit = AdminCubit.get(context);
         TextEditingController drinkNameController = TextEditingController();
+        TextEditingController drinkPriceController = TextEditingController();
         drinkNameController.text = model.drinkName;
+        drinkPriceController.text = model.price.toString();
         var formKey = GlobalKey<FormState>();
         return Scaffold(
           body: Center(
@@ -144,7 +146,7 @@ class EditDrinkData extends StatelessWidget {
                                                     ),
                                                   ),
                                                   Text(
-                                                    'صورة المشروب الجديد',
+                                                    'صورة المشروب',
                                                     style:
                                                         TextStyle(fontSize: 30),
                                                   ),
@@ -191,11 +193,28 @@ class EditDrinkData extends StatelessWidget {
                         context: context,
                         textDirection: TextDirection.rtl,
                         controller: drinkNameController,
-                        label: 'إسم المشروب الجديد',
+                        label: 'إسم المشروب',
                         keyboard: TextInputType.text,
                         validate: (String? value) {
                           if (value!.isEmpty) {
-                            return '!! هتعمل مشروب جديد إزاي من غير إسم أو صورة';
+                            return '!! هتعمل مشروب إزاي من غير إسم أو سعر أو صورة';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      defaultFormField(
+                        context: context,
+
+                        controller: drinkPriceController,
+                        label: 'سعر المشروب',
+                        hintText: 'بالإنجليزي معلش',
+                        keyboard: TextInputType.number,
+                        validate: (String? value) {
+                          if (value!.isEmpty) {
+                            return '!! هتعمل مشروب إزاي من غير إسم أو سعر أو صورة';
                           }
                           return null;
                         },
@@ -212,6 +231,7 @@ class EditDrinkData extends StatelessWidget {
                                   model.drinkImage.isNotEmpty) {
                                     if(isCold){
                                   cubit.updateColdDrinkData(
+                                    price: drinkPriceController.text as int,
                                     id: model.id,
                                     drinkName: drinkNameController.text,
                                     imageUrl: cubit.drinkImageUrl!.isNotEmpty
@@ -220,6 +240,7 @@ class EditDrinkData extends StatelessWidget {
                                   );
                                 }else{
                                       cubit.updateHotDrinkData(
+                                        price: drinkPriceController.text as int,
                                         id: model.id,
                                         drinkName: drinkNameController.text,
                                         imageUrl: cubit.drinkImageUrl!.isNotEmpty
@@ -231,6 +252,7 @@ class EditDrinkData extends StatelessWidget {
                                     context, const DrinksMenuAdminScreen());
                                 cubit.drinkImageUrl = '';
                                 drinkNameController.clear();
+                                drinkPriceController.clear();
                               }
                             },
                             label: 'كدا تمام',

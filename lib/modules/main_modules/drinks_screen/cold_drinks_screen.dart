@@ -46,7 +46,7 @@ Widget coldItemBuilder(
     ) {
   var cubit = MainLayCubit.get(context);
   TextEditingController otherAddController = TextEditingController();
-
+  bool isCold = true;
   return Padding(
     padding: const EdgeInsets.all(8.0),
     child: Container(
@@ -150,12 +150,15 @@ Widget coldItemBuilder(
                                   keyboard: TextInputType.text,
                                 ),
                               ),
+                              Text('حسابك : ${model.price} جنيه ',
+                                  style: const TextStyle(fontSize: 20)),
                               defaultButton(
                                   fontSize: 20,
                                   icon: FontAwesomeIcons.rocket,
                                   label: '(:  خمسة و جايلك',
                                   onPressed: () {
                                     cubit.orderComplete(
+                                      isCold: isCold,
                                       model: model,
                                       otherAdd: otherAddController.text
                                           .toString(),

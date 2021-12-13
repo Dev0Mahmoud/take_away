@@ -17,6 +17,8 @@ class AdminLayout extends StatelessWidget {
     var cubit = AdminCubit.get(context);
     return Builder(builder: (BuildContext context) {
       cubit.getUserData();
+      cubit.getUserOrders();
+      cubit.getDoneOrders();
       return BlocConsumer<AdminCubit, AdminStates>(
         listener: (context, state) {},
         builder: (context, state) => Scaffold(
@@ -32,26 +34,19 @@ class AdminLayout extends StatelessWidget {
             fallbackBuilder: (BuildContext context)=>const SizedBox(),
           ),
           appBar: AppBar(
+            toolbarHeight: 80,
             centerTitle: true,
             title: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
-              children: const [
-                Text(
+              children:  [
+                const Text(
                   '7HEVƎN',
                   style: TextStyle(fontSize: 20),
                 ),
-                Text(
+                const Text(
                   'Takeaway',
                   style: TextStyle(fontSize: 15),
                 ),
-              ],
-            ),
-
-          ),
-          body: Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: Column(
-              children: [
                 Text(
                   cubit.mainBottomScreenTitle[cubit.mainCurrentIndex],
                   style: TextStyle(
@@ -59,10 +54,17 @@ class AdminLayout extends StatelessWidget {
                     fontSize: 30,
                   ),
                 ),
-                cubit.mainBottomScreen[cubit.mainCurrentIndex]
               ],
             ),
+
           ),
+          body:
+          // Column(
+          //   children: [
+
+              cubit.mainBottomScreen[cubit.mainCurrentIndex],
+          //   ],
+          // ),
           bottomNavigationBar: BottomNavigationBar(
             items: const [
               BottomNavigationBarItem(icon: Icon(Icons.menu), label: 'جديد'),

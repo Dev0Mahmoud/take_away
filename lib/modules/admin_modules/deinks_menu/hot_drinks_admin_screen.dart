@@ -34,41 +34,44 @@ class HotDrinksAdminScreen extends StatelessWidget {
                   const SizedBox(
                     height: 10,
                   ),
-                InkWell(
-                  onTap: () {
-                    navigateAndFinishTo(context,  AddNewDrink(isCold: false,));
-                  },
-                  child: Center(
-                    child: Container(
-                      clipBehavior: Clip.antiAlias,
-                      height: 100,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                          color:
-                              Theme.of(context).primaryColor.withOpacity(0.4),
-                          borderRadius: BorderRadiusDirectional.circular(10)),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.min,
-                        children: const [
-                          Expanded(
-                            child: Text(
-                              'مشروب جديد',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 40
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: InkWell(
+                    onTap: () {
+                      navigateAndFinishTo(context,  AddNewDrink(isCold: false,));
+                    },
+                    child: Center(
+                      child: Container(
+                        clipBehavior: Clip.antiAlias,
+                        height: 100,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                            color:
+                                Theme.of(context).primaryColor.withOpacity(0.4),
+                            borderRadius: BorderRadiusDirectional.circular(10)),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: const [
+                            Expanded(
+                              child: Text(
+                                'مشروب جديد',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 40
+                                ),
+                                textAlign: TextAlign.center,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
-                              textAlign: TextAlign.center,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
                             ),
-                          ),
-                          Icon(
-                            Icons.add,
-                            color: Colors.white,
-                            size: 60,
-                          ),
-                        ],
+                            Icon(
+                              Icons.add,
+                              color: Colors.white,
+                              size: 60,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),

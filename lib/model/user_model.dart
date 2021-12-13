@@ -7,6 +7,7 @@ class UserModel {
   String? phone;
   String? image;
   bool? admin;
+  bool? hasProfileImage;
 
 
   UserModel({
@@ -17,6 +18,7 @@ class UserModel {
     this.phone,
     this.image,
     this.admin,
+    this.hasProfileImage,
 });
 
   UserModel.fromJson(Map<String,dynamic>json){
@@ -27,6 +29,7 @@ class UserModel {
     phone = json['phone'];
     image = json['image'];
     admin = json['admin'];
+    hasProfileImage = json['hasProfileImage'];
   }
   Map<String,dynamic> toMap(){
     return{
@@ -36,6 +39,7 @@ class UserModel {
       'phone':phone,
       'image':image,
       'admin':admin,
+      'hasProfileImage':hasProfileImage,
       'address':address,
     };
   }

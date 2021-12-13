@@ -255,6 +255,7 @@ String sugarQuantity(int index) {
   }
   return sugar;
 }
+
 String coldDrinkSugarQuantity(int index) {
   String sugar = '';
   switch (index) {

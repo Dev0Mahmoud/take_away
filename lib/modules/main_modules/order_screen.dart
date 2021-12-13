@@ -6,6 +6,7 @@ import 'package:take_away/layout/main_cubit/states.dart';
 import 'package:take_away/shared/components/components.dart';
 import 'package:take_away/shared/styles/icons.dart';
 
+import 'drinks_screen/fav_order.dart';
 import 'drinks_screen/user_order_screen.dart';
 
 
@@ -36,13 +37,14 @@ class OrderScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              actions: [
-                IconButton(
-                    onPressed: () {
-                       navigateTo(context, const UserOrder());
-                    },
-                    icon: const Icon(FontAwesomeIcons.shoppingCart)),
-              ],
+                // actions: [
+                //     Padding(
+                //       padding: const EdgeInsetsDirectional.only(end: 10),
+                //       child: IconButton(onPressed: (){
+                //         navigateTo(context, const FavOrder());
+                //       }, icon: const Icon(IconBroken.Edit,size: 40,)),
+                //     )
+                //   ],
             ),
             body: cubit.bottomScreen[cubit.currentIndex],
             bottomNavigationBar: BottomNavigationBar(
@@ -52,6 +54,9 @@ class OrderScreen extends StatelessWidget {
                 BottomNavigationBarItem(
                     icon: Icon(FontAwesomeIcons.wineGlass),
                     label: 'مشروبات ساقعة'),
+                BottomNavigationBarItem(
+                    icon: Icon(FontAwesomeIcons.shoppingCart),
+                    label: 'طلباتي'),
               ],
               currentIndex: cubit.currentIndex,
               showSelectedLabels: true,

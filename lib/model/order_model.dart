@@ -3,6 +3,8 @@ class OrderModel {
   late String drinkName;
   late String drinkImage;
   late int id = 0;
+  late bool isCold;
+  late bool isNewOrder;
   String? orderTime;
   String? drinkType;
   String? drinkQuantity;
@@ -23,6 +25,8 @@ class OrderModel {
     required this.drinkName,
     required this.drinkImage,
     required this.id,
+    required this.isCold,
+    required this.isNewOrder,
     this.orderTime,
     this.drinkType,
     this.drinkQuantity,
@@ -43,6 +47,8 @@ class OrderModel {
     drinkName = json['drinkName'];
     drinkImage = json['drinkImage'];
     id = json['id'];
+    isNewOrder = json['isNewOrder'];
+    isCold = json['isCold'];
     orderTime = json['orderTime'];
     drinkType = json['drinkType'];
     drinkQuantity = json['drinkQuantity'];
@@ -64,6 +70,8 @@ class OrderModel {
       'drinkName':drinkName,
       'drinkImage':drinkImage,
       'id':id,
+      'isCold':isCold,
+      'isNewOrder':isNewOrder,
       'orderTime':orderTime,
       'drinkType':drinkType,
       'drinkQuantity':drinkQuantity,
