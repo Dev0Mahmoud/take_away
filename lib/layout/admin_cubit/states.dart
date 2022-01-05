@@ -45,11 +45,27 @@ class OrderDone extends AdminStates {}
 class LoadingGetOrdersDataState extends AdminStates {}
 class SuccessGetOrdersDataState extends AdminStates {}
 
-class LoadingGetDoneOrdersState extends AdminStates {}
-class SuccessGetDoneOrdersState extends AdminStates {}
+class LoadingGetDoneUsersState extends AdminStates {}
+class SuccessGetDoneUsersState extends AdminStates {}
 
-class DoneOrderDeleteLoading extends AdminStates {}
-class DoneOrderDeleteDone extends AdminStates {}
+class LoadingGetUserDoneOrdersState extends AdminStates {}
+class SuccessGetUserDoneOrdersState extends AdminStates {}
+
+class NewOrderDeleteLoading extends AdminStates {}
+class NewOrderDeleteDone extends AdminStates {}
+
+
+class LoadingGetUserDetailsState extends AdminStates {}
+class SuccessGetUserDetailsState extends AdminStates {}
+
+class LoadingChangeSelectedState extends AdminStates {}
+class SuccessChangeSelectedState extends AdminStates {}
+
+class CheckedState extends AdminStates {}
+
+class LoadingBillOrdersState extends AdminStates {}
+class SuccessBillOrdersState extends AdminStates {}
+
 
 
 

@@ -7,6 +7,7 @@ import 'colors.dart';
 
 final ThemeData lightTheme = ThemeData(
   primaryColor: Colors.black,
+  unselectedWidgetColor: Colors.black,
   primarySwatch: defaultLightColor,
   scaffoldBackgroundColor:  HexColor('#f7e094'),
   bottomNavigationBarTheme:  BottomNavigationBarThemeData(
@@ -51,6 +52,7 @@ final ThemeData lightTheme = ThemeData(
 
 final ThemeData darkTheme = ThemeData(
   primaryColor: Colors.orange,
+   unselectedWidgetColor: Colors.orange,
    primarySwatch: defaultDarkColor,
    scaffoldBackgroundColor: HexColor('121212'),
   bottomNavigationBarTheme:  BottomNavigationBarThemeData(

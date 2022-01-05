@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hexcolor/hexcolor.dart';
 import 'package:take_away/layout/admin_cubit/cubit.dart';
+import 'package:take_away/layout/admin_layout.dart';
+import 'package:take_away/layout/user_cubit/states.dart';
 
 import 'package:take_away/modules/admin_modules/deinks_menu/drinks_menu_admin_screen.dart';
 import 'package:take_away/modules/main_modules/login_screen/login_screen.dart';
-import 'package:take_away/modules/main_modules/order_screen.dart';
+import 'package:take_away/layout/user_layout.dart';
 import 'package:take_away/shared/components/components.dart';
 import 'package:take_away/shared/components/constance.dart';
 import 'package:take_away/shared/styles/icons.dart';
@@ -16,7 +18,8 @@ class AdminNavBar extends StatelessWidget {
     required this.accountName,
     required this.accountEmail,
     required this.accountImage,
-    required this.condition
+    required this.condition,
+
   }) : super(key: key);
   String? accountName;
   String? accountEmail;
@@ -189,12 +192,11 @@ class AdminNavBar extends StatelessWidget {
             },
 
           ),
-
           ListTile(
             leading: const Icon(FontAwesomeIcons.user),
             title: const Text('واجهة المستخدم',style: TextStyle(color: Colors.black),),
             onTap: (){
-              navigateTo(context, const OrderScreen());
+              navigateTo(context, const UserLayout());
             },
 
           ),

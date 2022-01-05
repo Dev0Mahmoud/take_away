@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_conditional_rendering/flutter_conditional_rendering.dart';
-import 'package:take_away/layout/main_layout.dart';
+import 'package:take_away/layout/splash_screen.dart';
 import 'package:take_away/modules/main_modules/register_screen/register_screen.dart';
 import 'package:take_away/shared/components/components.dart';
 import 'package:take_away/shared/network/local/cache_helper.dart';
@@ -30,7 +30,7 @@ class LoginScreen extends StatelessWidget {
 
               CacheHelper.saveData(key: 'uId', value: state.uId).then((
                   value) async {
-              navigateAndFinishTo(context,  const MainLayout());
+              navigateAndFinishTo(context,  const SplashScreen());
               }).catchError((error) {
                 print('Error is ${error.toString()}');
               });

@@ -17,8 +17,8 @@ class AdminLayout extends StatelessWidget {
     var cubit = AdminCubit.get(context);
     return Builder(builder: (BuildContext context) {
       cubit.getUserData();
-      cubit.getUserOrders();
-      cubit.getDoneOrders();
+      cubit.getNewOrders();
+      cubit.getDoneUsers();
       return BlocConsumer<AdminCubit, AdminStates>(
         listener: (context, state) {},
         builder: (context, state) => Scaffold(
@@ -29,12 +29,35 @@ class AdminLayout extends StatelessWidget {
               accountEmail: cubit.userModel!.email,
               accountName: cubit.userModel!.name,
               accountImage: cubit.userModel!.image,
+
             ),
             conditionBuilder: (BuildContext context) => cubit.userModel != null,
             fallbackBuilder: (BuildContext context)=>const SizedBox(),
           ),
           appBar: AppBar(
-            toolbarHeight: 80,
+
+            // flexibleSpace: Column(
+            //   mainAxisSize: MainAxisSize.min,
+            //   crossAxisAlignment: CrossAxisAlignment.center,
+            //   children:  [
+            //     const Text(
+            //       '7HEVƎN',
+            //       style: TextStyle(fontSize: 20),
+            //     ),
+            //     const Text(
+            //       'Takeaway',
+            //       style: TextStyle(fontSize: 15),
+            //     ),
+            //     Text(
+            //       cubit.mainBottomScreenTitle[cubit.mainCurrentIndex],
+            //       style: TextStyle(
+            //         color: Theme.of(context).primaryColor,
+            //         fontSize: 30,
+            //       ),
+            //     ),
+            //   ],
+            // ),
+            toolbarHeight: 100,
             centerTitle: true,
             title: Column(
               crossAxisAlignment: CrossAxisAlignment.center,

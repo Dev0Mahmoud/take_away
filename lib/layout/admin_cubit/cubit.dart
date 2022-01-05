@@ -1,9 +1,11 @@
 import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:collection/src/iterable_extensions.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 import 'package:take_away/data/dialoge_options.dart';
 import 'package:take_away/layout/admin_cubit/states.dart';
 import 'package:take_away/model/drinks_model.dart';
@@ -143,8 +145,6 @@ class AdminCubit extends Cubit<AdminStates> {
       emit(ErrorUpdateUserDataState());
     });
   }
-
-
 
   void deleteProfileImage() async {
     await firebase_storage.FirebaseStorage.instance
@@ -287,23 +287,6 @@ class AdminCubit extends Cubit<AdminStates> {
       }
       emit(SuccessGetDrinksDataState());
     });
-
-    // await FirebaseFirestore.instance
-    //     .collection('hotDrinksMenu')
-    //     .get()
-    //     .then((value) async {
-    //   value.docs.forEach((element) {
-    //     hotDrinksMenu = [];
-    //      element.reference.snapshots().listen((event) {
-    //       drinkId.add(element.id);
-    //       hotDrinksMenu.add(DrinksModel.fromJson(element.data()));
-    //     });
-    //   });
-    //   emit(SuccessGetDrinksDataState());
-    // }).catchError((error) {
-    //   print('Error is ${error.toString()}');
-    //   emit(ErrorGetDrinksDataState());
-    // });
   }
 
   void addNewColdDrink({
@@ -403,11 +386,6 @@ class AdminCubit extends Cubit<AdminStates> {
   }
 
   void uploadDrinkImage() {
-    // drinksModel!.drinkImage != ''
-    //     ? firebase_storage.FirebaseStorage.instance
-    //         .refFromURL(drinksModel!.drinkImage)
-    //         .delete()
-    //     :
     emit(LoadingDrinkImagePickedState());
     firebase_storage.FirebaseStorage.instance
         .ref()
@@ -417,7 +395,6 @@ class AdminCubit extends Cubit<AdminStates> {
       value.ref.getDownloadURL().then((value) {
         drinkImageUrl = value;
 
-        // updateDrinkImage(imageUrl: value,);
         emit(SuccessUploadDrinkImageState());
       }).catchError((e) {
         emit(ErrorUploadDrinkImageState());
@@ -427,16 +404,16 @@ class AdminCubit extends Cubit<AdminStates> {
     });
   }
 
-
   OrderModel? orderModel;
+  UserModel? doneUserModel;
 
-  void orderDone(
-      {
-        required OrderModel model,
-      }) async{
+  void orderDone({
+    required OrderModel model,
+  }) async {
     emit(LoadingOrderDoneState());
-    if (model.isCold){
+    if (model.isCold) {
       orderModel = OrderModel(
+          price: model.price,
           isNewOrder: false,
           isCold: model.isCold,
           uId: model.uId,
@@ -446,23 +423,37 @@ class AdminCubit extends Cubit<AdminStates> {
           drinkImage: model.drinkImage,
           orderTime: model.orderTime,
           otherAdd: model.otherAdd);
-      await FirebaseFirestore.instance.collection('users').doc(model.uId)
-          .collection('doneOrders')
-          .doc('${orderModel!.id}')
-          .set(orderModel!.toMap())
-          .then((value) {
-        getDoneOrders();
-        getUsersDetails(uId: model.uId);
-        emit(OrderDone());
-      }).catchError((error) {
-        // emit(ErrorAddDrinkState());
-        print('Error is ${error.toString()}');
+      FirebaseFirestore.instance
+          .collection('users')
+          .doc(model.uId)
+          .snapshots()
+          .listen((event) {
+        doneUserModel = UserModel.fromJson(event.data()!);
       });
+      await FirebaseFirestore.instance
+          .collection('usersDoneOrders')
+          .doc(model.uId)
+          .set(doneUserModel!.toMap())
+          .then((value) async {
+        await FirebaseFirestore.instance
+            .collection('usersDoneOrders')
+            .doc(model.uId)
+            .collection('doneOrders')
+            .doc('${orderModel!.id}')
+            .set(orderModel!.toMap())
+            .then((value) {
+          emit(OrderDone());
+        }).catchError((error) {
+          // emit(ErrorAddDrinkState());
+          print('Error is ${error.toString()}');
+        });
+      });
+
       emit(OrderDone());
-    }
-    else{
+    } else {
       if (model.drinkName == 'قهوة') {
-         orderModel = OrderModel(
+        orderModel = OrderModel(
+          price: model.price,
           isCold: model.isCold,
           isNewOrder: false,
           uId: model.uId,
@@ -478,22 +469,34 @@ class AdminCubit extends Cubit<AdminStates> {
           drinkImage: model.drinkImage,
           drinkName: model.drinkName,
         );
-        await FirebaseFirestore.instance
+        FirebaseFirestore.instance
             .collection('users')
             .doc(model.uId)
-            .collection('doneOrders')
-            .doc('${orderModel!.id}')
-            .set(orderModel!.toMap())
-            .then((value) {
-          getDoneOrders();
-          getUsersDetails(uId: model.uId);
-          emit(OrderDone());
-        }).catchError((error) {
-          print('Error is ${error.toString()}');
+            .snapshots()
+            .listen((event) {
+          doneUserModel = UserModel.fromJson(event.data()!);
+        });
+        await FirebaseFirestore.instance
+            .collection('usersDoneOrders')
+            .doc(model.uId)
+            .set(doneUserModel!.toMap())
+            .then((value) async {
+          await FirebaseFirestore.instance
+              .collection('usersDoneOrders')
+              .doc(model.uId)
+              .collection('doneOrders')
+              .doc('${orderModel!.id}')
+              .set(orderModel!.toMap())
+              .then((value) {
+            emit(OrderDone());
+          }).catchError((error) {
+            print('Error is ${error.toString()}');
+          });
         });
         emit(OrderDone());
       } else {
-         orderModel = OrderModel(
+        orderModel = OrderModel(
+            price: model.price,
             isNewOrder: false,
             isCold: model.isCold,
             uId: model.uId,
@@ -509,17 +512,29 @@ class AdminCubit extends Cubit<AdminStates> {
         await FirebaseFirestore.instance
             .collection('users')
             .doc(model.uId)
-            .collection('doneOrders')
-            .doc('${orderModel!.id}')
-            .set(orderModel!.toMap())
-            .then((value) {
-              getDoneOrders();
-              getUsersDetails(uId: model.uId);
-          emit(OrderDone());
-        }).catchError((error) {
-
-          print('Error is ${error.toString()}');
+            .get()
+            .then((event) async {
+          doneUserModel = UserModel.fromJson(event.data()!);
+        }).then((value) async {
+          await FirebaseFirestore.instance
+              .collection('usersDoneOrders')
+              .doc(model.uId)
+              .set(doneUserModel!.toMap())
+              .then((value) async {
+            await FirebaseFirestore.instance
+                .collection('usersDoneOrders')
+                .doc(model.uId)
+                .collection('doneOrders')
+                .doc('${orderModel!.id}')
+                .set(orderModel!.toMap())
+                .then((value) {
+              emit(OrderDone());
+            }).catchError((error) {
+              print('Error is ${error.toString()}');
+            });
+          });
         });
+
         emit(OrderDone());
       }
     }
@@ -529,71 +544,166 @@ class AdminCubit extends Cubit<AdminStates> {
 
   List<OrderModel> doneOrders = [];
 
-  void getUserOrders() async {
+  void getNewOrders() async {
     emit(LoadingGetOrdersDataState());
-
     FirebaseFirestore.instance
-        .collection('users')
-        .get()
-        .asStream()
+        .collection('orders')
+        .orderBy('orderTime')
+        .snapshots()
         .listen((event) {
-      for (var user in event.docs) {
-        user.reference.snapshots().listen((event) {
-          event.reference.collection('orders').snapshots().listen((event) {
-            newOrders = [];
-            for (var order in event.docs) {
-              newOrders.add(OrderModel.fromJson(order.data()));
-            }
-            emit(SuccessGetOrdersDataState());
-          });
-        });
+      newOrders = [];
+      for (var order in event.docs) {
+        newOrders.add(OrderModel.fromJson(order.data()));
+        print(newOrders.length);
       }
+      emit(SuccessGetOrdersDataState());
     });
   }
 
-  void deleteNewOrder({required OrderModel model}) async{
-    emit(DoneOrderDeleteLoading());
-    await FirebaseFirestore.instance.collection('users').doc(model.uId)
+  void deleteNewOrder({required OrderModel model}) async {
+    emit(NewOrderDeleteLoading());
+    await FirebaseFirestore.instance
         .collection('orders')
         .doc('${model.id}')
-        .delete().then((value) {
-      getDoneOrders();
-      emit(DoneOrderDeleteDone());
+        .delete()
+        .then((value) {
+      getUsersDetails(uId: model.uId);
     });
-
+    emit(NewOrderDeleteDone());
   }
 
-  void getDoneOrders() async {
-    emit(LoadingGetDoneOrdersState());
+  void getDoneUsers() async {
+    emit(LoadingGetDoneUsersState());
+    FirebaseFirestore.instance
+        .collection('usersDoneOrders')
+        .snapshots()
+        .listen((event) {
+      doneUsers = [];
+      for (var user in event.docs) {
+        doneUsers.add(UserModel.fromJson(user.data()));
+        print('user is ${doneUsers.length}');
+        // doneUserIndex!=null?deleteBilledUsers(doneUserIndex!):null;
+        emit(SuccessGetDoneUsersState());
+      }
+    });
+  }
+  int? doneUserIndex;
+  OrderModel? doneOrderModel;
+  List<int> totalAmount = [];
+  int total = 0;
+
+  void getUserDoneOrders({required String uId}) async {
 
     FirebaseFirestore.instance
-        .collection('users')
-        .get()
-        .asStream()
+        .collection('usersDoneOrders')
+        .doc(uId)
+        .snapshots()
         .listen((event) {
-      for (var user in event.docs) {
-        user.reference.snapshots().listen((event) {
-          event.reference.collection('doneOrders').snapshots().listen((event) {
-            doneOrders = [];
-            for (var order in event.docs) {
-              doneOrders.add(OrderModel.fromJson(order.data()));
-            }
-            emit(SuccessGetDoneOrdersState());
-          });
-        });
-      }
+      event.reference.collection('doneOrders').snapshots().listen((event) {
+        doneOrders = [];
+        totalAmount = [];
+
+        for (var order in event.docs) {
+          doneOrderModel = OrderModel.fromJson(order.data());
+          doneOrders.add(OrderModel.fromJson(order.data()));
+          totalAmount.add(OrderModel.fromJson(order.data()).price);
+          total = totalAmount.sum;
+        }
+      });
+
     });
   }
 
   UserModel? userDetails;
+  List<UserModel> doneUsers = [];
 
   void getUsersDetails({required String uId}) async {
-    await FirebaseFirestore.instance
+    emit(LoadingGetUserDetailsState());
+    FirebaseFirestore.instance
         .collection('users')
         .doc(uId)
-        .get()
-        .then((value) {
+        .snapshots()
+        .listen((value) {
       userDetails = UserModel.fromJson(value.data()!);
-    }).catchError((Error) {});
+      emit(SuccessGetUserDetailsState());
+    });
+  }
+
+  int selected = 0;
+
+  void expansionChangSelected(int s) {
+    emit(LoadingChangeSelectedState());
+    selected = s;
+    emit(SuccessChangeSelectedState());
+  }
+
+  Map<int, bool> isChecked = {};
+  List<int> checkedItems = [];
+
+  void checkBoxClicked(int index) {
+    if (isChecked[index] == null) {
+      isChecked[index] = false;
+    }
+    isChecked[index] = !isChecked[index]!;
+    if (isChecked[index] == true) {
+      checkedItems.add(index);
+    } else {
+      checkedItems.remove(index);
+    }
+    print(checkedItems.toString());
+    emit(CheckedState());
+  }
+
+  bool? isAllChecked;
+
+  void allCheckBoxClicked() {
+    isAllChecked ??= false;
+    isAllChecked = !isAllChecked!;
+    if (!isAllChecked!) {
+      checkedItems = [];
+    } else {
+      checkedItems = [];
+      doneOrders.forEach((element) {
+        checkedItems.add(element.id);
+      });
+    }
+    print(checkedItems.toString());
+    emit(CheckedState());
+  }
+
+  int counter = 0;
+
+  void billedOrders({required String uId}) {
+    // counter = checkedItems.length+1;
+    print(counter + checkedItems.length);
+    emit(LoadingBillOrdersState());
+    FirebaseFirestore.instance.collection('ordersCount').doc().set({
+      'counter': checkedItems.length.toString(),
+      'date': DateFormat.MEd().add_jm().format(DateTime.now())
+    }).then((value) {
+      counter = 0;
+      FirebaseFirestore.instance
+          .collection('usersDoneOrders')
+          .doc(uId)
+          .snapshots()
+          .listen((event) {
+        checkedItems.forEach((element) {
+          event.reference
+              .collection('doneOrders')
+              .doc('$element')
+              .delete()
+              .then((value) {
+            checkedItems = [];
+          });
+        });
+      });
+    });
+    getUserDoneOrders(uId: uId);
+    getDoneUsers();
+    emit(SuccessBillOrdersState());
+  }
+
+  void deleteBilledUsers(int index){
+    doneUsers.removeAt(index);
   }
 }

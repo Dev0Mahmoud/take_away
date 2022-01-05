@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_conditional_rendering/conditional.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:take_away/layout/main_cubit/cubit.dart';
-import 'package:take_away/layout/main_cubit/states.dart';
+import 'package:take_away/layout/user_cubit/cubit.dart';
+import 'package:take_away/layout/user_cubit/states.dart';
 import 'package:take_away/model/drinks_model.dart';
 import 'package:take_away/model/order_model.dart';
 import 'package:take_away/shared/components/components.dart';
@@ -15,14 +15,14 @@ class FavOrder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<MainLayCubit, MainLayStates>(
+    return BlocConsumer<UserCubit, UserStates>(
         listener: (context, state) {
-          if (state is MainLayOrderDeleteDone) {
+          if (state is UserOrderDeleteDone) {
             showToast(state: ToastStates.ERROR, msg: 'طلبك المفضل مبقاش مفضل');
             Fluttertoast.cancel();
           }
         }, builder: (context, state) {
-      var cubit = MainLayCubit.get(context);
+      var cubit = UserCubit.get(context);
       return Scaffold(
         appBar: AppBar(
           title: const Icon(IconBroken.Heart,size: 40,),
@@ -64,7 +64,7 @@ class FavOrder extends StatelessWidget {
 }
 
 Widget favOrderItem(OrderModel model,int index, DrinksModel dModel, context) {
-  var cubit = MainLayCubit.get(context);
+  var cubit = UserCubit.get(context);
   TextEditingController otherAddController = TextEditingController();
   otherAddController.text = model.otherAdd!;
 

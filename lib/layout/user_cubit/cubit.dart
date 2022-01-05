@@ -6,8 +6,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 import 'package:take_away/data/dialoge_options.dart';
-import 'package:take_away/layout/main_cubit/states.dart';
+import 'package:take_away/layout/user_cubit/states.dart';
 import 'package:take_away/model/drinks_model.dart';
 import 'package:take_away/model/order_model.dart';
 import 'package:take_away/model/user_model.dart';
@@ -17,10 +18,10 @@ import 'package:take_away/modules/main_modules/drinks_screen/user_order_screen.d
 import 'package:take_away/shared/components/constance.dart';
 import 'package:take_away/shared/network/local/cache_helper.dart';
 
-class MainLayCubit extends Cubit<MainLayStates> {
-  MainLayCubit() : super(MainLayInitialState());
+class UserCubit extends Cubit<UserStates> {
+  UserCubit() : super(UserInitialState());
 
-  static MainLayCubit get(context) => BlocProvider.of(context);
+  static UserCubit get(context) => BlocProvider.of(context);
 
 
   UserModel?
@@ -84,7 +85,7 @@ class MainLayCubit extends Cubit<MainLayStates> {
   void changeIndex(int index) {
     currentIndex = index;
 
-    emit(MainLayChangeBottomNavState());
+    emit(UserChangeBottomNavState());
   }
 
   List<Widget> bottomScreen = [
@@ -201,7 +202,7 @@ class MainLayCubit extends Cubit<MainLayStates> {
 
     drinkTypeSelected[index] = !drinkTypeSelected[index];
     forEditDrinkTypeSelected = drinkTypeSelected;
-    emit(MainLayDrinkTypeSelected());
+    emit(UserDrinkTypeSelected());
   }
 
 
@@ -211,7 +212,7 @@ class MainLayCubit extends Cubit<MainLayStates> {
     drinkQuantitySelected = [false, false, false];
     drinkQuantitySelected[index] = !drinkQuantitySelected[index];
     forEditDrinkQuantitySelected = drinkQuantitySelected;
-    emit(MainLayDrinkQuantitySelected());
+    emit(UserDrinkQuantitySelected());
   }
 
 
@@ -221,7 +222,7 @@ class MainLayCubit extends Cubit<MainLayStates> {
     glassTypeSelected = [false, false, false];
     glassTypeSelected[index] = !glassTypeSelected[index];
     forEditGlassTypeSelected = glassTypeSelected;
-    emit(MainLayGlassTypeSelected());
+    emit(UserGlassTypeSelected());
   }
 
 
@@ -231,13 +232,13 @@ class MainLayCubit extends Cubit<MainLayStates> {
     sugarSelected = [false, false, false, false];
     sugarSelected[index] = !sugarSelected[index];
     forEditSugarSelected = sugarSelected;
-    emit(MainLaySugarSelected());
+    emit(UserSugarSelected());
   }
   void coldDrinkSugarPressed(int index) {
     coldDrinkSugarIndex = index;
     coldDrinkSugarSelected = [false, false, false,];
     coldDrinkSugarSelected[index] = !coldDrinkSugarSelected[index];
-    emit(MainLayCDSugarSelected());
+    emit(UserCDSugarSelected());
   }
 
 
@@ -249,7 +250,7 @@ class MainLayCubit extends Cubit<MainLayStates> {
     ];
     coffeeTypeSelected[index] = !coffeeTypeSelected[index];
     forEditCoffeeTypeSelected = coffeeTypeSelected;
-    emit(MainLayCoffeeTypeSelected());
+    emit(UserCoffeeTypeSelected());
   }
 
 
@@ -259,7 +260,7 @@ class MainLayCubit extends Cubit<MainLayStates> {
     coffeeLevelSelected = [false, false, false];
     coffeeLevelSelected[index] = !coffeeLevelSelected[index];
     forEditCoffeeLevelSelected = coffeeLevelSelected;
-    emit(MainLayCoffeeLevelSelected());
+    emit(UserCoffeeLevelSelected());
   }
 
   void singleCoffeeGlassTypePressed(int index) {
@@ -267,7 +268,7 @@ class MainLayCubit extends Cubit<MainLayStates> {
     singleCoffeeGlassTypeSelected = [false, false, false];
     singleCoffeeGlassTypeSelected[index] = !singleCoffeeGlassTypeSelected[index];
     forEditSingleCoffeeGlassTypeSelected = singleCoffeeGlassTypeSelected;
-    emit(MainLaySingleCoffeeGlassTypeSelected());
+    emit(UserSingleCoffeeGlassTypeSelected());
   }
 
   void doubleCoffeeGlassTypePressed(int index) {
@@ -278,7 +279,7 @@ class MainLayCubit extends Cubit<MainLayStates> {
     ];
     doubleCoffeeGlassTypeSelected[index] = !doubleCoffeeGlassTypeSelected[index];
     forEditDoubleCoffeeGlassTypeSelected = doubleCoffeeGlassTypeSelected;
-    emit(MainLayDoubleCoffeeGlassTypeSelected());
+    emit(UserDoubleCoffeeGlassTypeSelected());
   }
 
 
@@ -287,7 +288,7 @@ class MainLayCubit extends Cubit<MainLayStates> {
     coffeeDoubleSelected[index] = !coffeeDoubleSelected[index];
     isCoffeeDouble = coffeeDoubleSelected[index];
     forEditCoffeeDoubleSelected = coffeeDoubleSelected;
-    emit(MainLayCoffeeDoubleSelected());
+    emit(UserCoffeeDoubleSelected());
   }
 
 
@@ -298,7 +299,7 @@ class MainLayCubit extends Cubit<MainLayStates> {
     coffeeSugarSelected[index] = !coffeeSugarSelected[index];
     forEditCoffeeSugarSelected = coffeeSugarSelected;
 
-    emit(MainLayCoffeeSugarSelected());
+    emit(UserCoffeeSugarSelected());
   }
 
   OrderModel? orderModel;
@@ -382,10 +383,11 @@ class MainLayCubit extends Cubit<MainLayStates> {
       required bool isCold,
 
       }) async{
-    emit(MainLayOrderLoading());
+    emit(UserOrderLoading());
     if (isCold){
       otherA = otherAdd;
       orderModel = OrderModel(
+        price: model.price,
         isNewOrder: true,
           isCold: isCold,
           uId: uId!,
@@ -393,32 +395,33 @@ class MainLayCubit extends Cubit<MainLayStates> {
           coldDrinkSugarType: coldDrinkSugarQuantity(coldDrinkSugarIndex),
           drinkName: model.drinkName,
           drinkImage: model.drinkImage,
-          orderTime: TimeOfDay.now().toString(),
+          orderTime: DateFormat.MEd().add_jm().format(DateTime.now()),
           otherAdd: otherAdd);
-      await FirebaseFirestore.instance.collection('users').doc(uId)
+      await FirebaseFirestore.instance
           .collection('orders')
           .doc('${orderModel!.id}')
           .set(orderModel!.toMap())
           .then((value) {
         CacheHelper.saveData(key: 'oId', value: ++oId);
-        emit(MainLayOrderDone());
+        emit(UserOrderDone());
       }).catchError((error) {
         // emit(ErrorAddDrinkState());
         print('Error is ${error.toString()}');
       });
       coldDrinkSugarIndex = 1;
       coldDrinkSugarSelected = [false, true, false];
-      emit(MainLayOrderDone());
+      emit(UserOrderDone());
     }
     else{
       if (model.drinkName == 'قهوة') {
         otherA = otherAdd;
         orderModel = OrderModel(
+          price: isCoffeeDouble? model.price+5 : model.price,
           isCold: isCold,
           isNewOrder: true,
           uId: uId!,
           id: oId,
-          orderTime: TimeOfDay.now().toString(),
+          orderTime: DateFormat.MEd().add_jm().format(DateTime.now()),
           otherAdd: otherAdd,
           coffeeLevel: coffeeLevel(coffeeLevelIndex),
           isDouble: isCoffeDouble(isCoffeeDouble),
@@ -430,16 +433,14 @@ class MainLayCubit extends Cubit<MainLayStates> {
               coffeeSingleGlassType(singleCoffeeGlassTypeIndex, isCoffeeDouble),
           drinkImage: model.drinkImage,
           drinkName: model.drinkName,
-        );
+        );print(orderModel!.price.toString());
         await FirebaseFirestore.instance
-            .collection('users')
-            .doc(uId)
             .collection('orders')
             .doc('${orderModel!.id}')
             .set(orderModel!.toMap())
             .then((value) {
           CacheHelper.saveData(key: 'oId', value: ++oId);
-          emit(MainLayOrderDone());
+          emit(UserOrderDone());
         }).catchError((error) {
           print('Error is ${error.toString()}');
         });
@@ -456,17 +457,18 @@ class MainLayCubit extends Cubit<MainLayStates> {
         isCoffeeDouble = false;
         coffeeDoubleSelected = [isCoffeeDouble];
         coffeeSugarSelected = [false, false, false, false, false, true];
-        emit(MainLayOrderDone());
+        emit(UserOrderDone());
       } else {
         otherA = otherAdd;
         orderModel = OrderModel(
+            price: model.price,
             isNewOrder: true,
             isCold: isCold,
             uId: uId!,
             id: oId,
             drinkName: model.drinkName,
             drinkImage: model.drinkImage,
-            orderTime: TimeOfDay.now().toString(),
+            orderTime: DateFormat.MEd().add_jm().format(DateTime.now()),
             drinkType: drinkType(drinkTypeIndex, model),
             glassType: glassType(glassTypeIndex),
             sugarType: sugarQuantity(sugarIndex),
@@ -474,14 +476,12 @@ class MainLayCubit extends Cubit<MainLayStates> {
                 drinkQuantity(drinkQuantityIndex, drinkTypeIndex, model),
             otherAdd: otherAdd);
         await FirebaseFirestore.instance
-            .collection('users')
-            .doc(uId)
             .collection('orders')
             .doc('${orderModel!.id}')
             .set(orderModel!.toMap())
             .then((value) {
           CacheHelper.saveData(key: 'oId', value: ++oId);
-          emit(MainLayOrderDone());
+          emit(UserOrderDone());
         }).catchError((error) {
           // emit(ErrorAddDrinkState());
           print('Error is ${error.toString()}');
@@ -498,7 +498,7 @@ class MainLayCubit extends Cubit<MainLayStates> {
         drinkQuantitySelected = [false, true, false];
         glassTypeSelected = [false, false, true];
         sugarSelected = [true, false, false, false];
-        emit(MainLayOrderDone());
+        emit(UserOrderDone());
       }
     }
   }
@@ -507,24 +507,27 @@ class MainLayCubit extends Cubit<MainLayStates> {
   void getUserOrders()async{
     emit(LoadingGetOrdersDataState());
      FirebaseFirestore.instance
-        .collection('users').doc(uId).collection('orders').orderBy('orderTime').snapshots()
+        .collection('orders').orderBy('orderTime').snapshots()
         .listen((event) {
       orders = [];
       for (var element in event.docs) {
-        orders.add(OrderModel.fromJson(element.data()));
+        final order =OrderModel.fromJson(element.data());
+        if(uId == order.uId) {
+          orders.add(order);
+        }
       }
       emit(SuccessGetOrdersDataState());
     });
   }
 
   void deleteOrder({required int id,}) async{
-    emit(MainLayOrderDeleteLoading());
-    await FirebaseFirestore.instance.collection('users').doc(uId)
+    emit(UserOrderDeleteLoading());
+    await FirebaseFirestore.instance
         .collection('orders')
         .doc('$id')
         .delete().then((value){
           getUserOrders();
-          emit(MainLayOrderDeleteDone());
+          emit(UserOrderDeleteDone());
     });
 
   }
@@ -532,24 +535,24 @@ class MainLayCubit extends Cubit<MainLayStates> {
 
 
   void addFavOrder({required int index,}) {
-    emit(MainLayFavOrderLoading());
+    emit(UserFavOrderLoading());
     if(favOrder.contains(orders[index])){
-      emit(MainLayFavOrderExisting());
+      emit(UserFavOrderExisting());
     }
     else {
       favOrder.add(orders[index]);
-      emit(MainLayFavOrderDone());
+      emit(UserFavOrderDone());
     }
   }
   void deleteFavOrder({required int index,}) {
-    emit(MainLayOrderDeleteLoading());
+    emit(UserOrderDeleteLoading());
     favOrder.removeAt(index);
-    emit(MainLayOrderDeleteDone());
+    // emit(UserOrderDeleteDone());
   }
 
   void orderFav({required int index,}) {
     orders.add(favOrder[index]);
-    emit(MainLayOrderDone());
+    // emit(UserOrderDone());
   }
 
 

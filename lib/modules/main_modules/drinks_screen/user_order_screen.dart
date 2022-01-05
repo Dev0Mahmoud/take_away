@@ -4,14 +4,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_conditional_rendering/conditional.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:take_away/layout/main_cubit/cubit.dart';
-import 'package:take_away/layout/main_cubit/states.dart';
-import 'package:take_away/model/drinks_model.dart';
+import 'package:take_away/layout/user_cubit/cubit.dart';
+import 'package:take_away/layout/user_cubit/states.dart';
 import 'package:take_away/model/order_model.dart';
 import 'package:take_away/shared/components/components.dart';
 import 'package:take_away/shared/styles/icons.dart';
-
-import 'fav_order.dart';
 
 class UserOrder extends StatelessWidget {
   const UserOrder({Key? key}) : super(key: key);
@@ -20,24 +17,24 @@ class UserOrder extends StatelessWidget {
   Widget build(BuildContext context) {
     return Builder(
       builder: (context) {
-        MainLayCubit.get(context).getUserOrders();
-        return BlocConsumer<MainLayCubit, MainLayStates>(
+        UserCubit.get(context).getUserOrders();
+        return BlocConsumer<UserCubit, UserStates>(
             listener: (context, state) {
-          if (state is MainLayOrderDeleteDone) {
-            MainLayCubit.get(context).getUserOrders();
+          if (state is UserOrderDeleteDone) {
+            UserCubit.get(context).getUserOrders();
             showToast(state: ToastStates.ERROR, msg: 'طلبك إتلغي');
-            Fluttertoast.cancel();
+
           }
-          if (state is MainLayFavOrderExisting) {
+          if (state is UserFavOrderExisting) {
             showToast(state: ToastStates.ERROR, msg: 'طلبك المفضل موجود');
-            Fluttertoast.cancel();
+
           }
-          if (state is MainLayFavOrderDone) {
+          if (state is UserFavOrderDone) {
             showToast(state: ToastStates.WARNING, msg: 'طلبك بقي مفضل');
             Fluttertoast.cancel();
           }
         }, builder: (context, state) {
-          var cubit = MainLayCubit.get(context);
+          var cubit = UserCubit.get(context);
           return Container(
             color: Colors.transparent,
              child: Conditional.single(
@@ -46,7 +43,7 @@ class UserOrder extends StatelessWidget {
                   widgetBuilder: (BuildContext context) =>
                       ListView.builder(
                         shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
+                        physics: const BouncingScrollPhysics(),
                         itemBuilder: (context, index) => orderItem(
                           cubit.orders[index],index,
                           context,),
@@ -141,7 +138,7 @@ class UserOrder extends StatelessWidget {
 }
 
 Widget orderItem(OrderModel model,int index, context) {
-  var cubit = MainLayCubit.get(context);
+  var cubit = UserCubit.get(context);
   TextEditingController otherAddController = TextEditingController();
   otherAddController.text = model.otherAdd!;
 

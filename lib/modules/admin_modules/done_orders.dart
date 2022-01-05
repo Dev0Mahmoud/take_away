@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_conditional_rendering/conditional.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:take_away/layout/admin_cubit/cubit.dart';
 import 'package:take_away/layout/admin_cubit/states.dart';
 import 'package:take_away/model/order_model.dart';
+import 'package:take_away/model/user_model.dart';
 import 'package:take_away/shared/components/components.dart';
 import 'package:take_away/shared/styles/icons.dart';
 
@@ -13,46 +15,62 @@ class DoneOrders extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var cubit = AdminCubit.get(context);
     return Builder(builder: (context) {
-      AdminCubit.get(context).getDoneOrders();
+      cubit.getDoneUsers();
       return BlocConsumer<AdminCubit, AdminStates>(
           listener: (context, state) {},
           builder: (context, state) {
-            var cubit = AdminCubit.get(context);
             return Container(
               child: Conditional.single(
-                  conditionBuilder: (context) => cubit.doneOrders.isNotEmpty,
+                  conditionBuilder: (context) => cubit.doneUsers.isNotEmpty,
+                  // &&cubit.doneOrders.isNotEmpty,
                   widgetBuilder: (BuildContext context) => ListView.builder(
+                        key: Key(cubit.selected.toString()),
                         shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemBuilder: (context, index) => doneOrderItem(
-                          cubit.doneOrders[index],
-                          index,
-                          context,
-                        ),
-                        itemCount: cubit.doneOrders.length,
+                        physics: const BouncingScrollPhysics(),
+                        itemBuilder: (context, index) => doneUserItem(
+                            cubit.doneUsers[index], index, context, state),
+                        itemCount: cubit.doneUsers.length,
                       ),
-                  fallbackBuilder: (context) => Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            // const CircularProgressIndicator(),
-                            Icon(
-                              FontAwesomeIcons.notEqual,
-                              color: Theme.of(context).primaryColor,
-                              size: 80,
-                            ),
-                            const SizedBox(
-                              height: 30,
-                            ),
-                            Text(
-                              'مفيش طلبات إتسلمت',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                  fontSize: 40,
-                                  color: Theme.of(context).primaryColor),
-                            ),
-                          ],
+                  fallbackBuilder: (context) => Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    // const CircularProgressIndicator(),
+                                    Padding(
+                                      padding: const EdgeInsetsDirectional.only(
+                                          bottom: 30),
+                                      child: Icon(
+                                        FontAwesomeIcons.notEqual,
+                                        color: Theme.of(context).primaryColor,
+                                        size: 50,
+                                      ),
+                                    ),
+                                    // const SizedBox(
+                                    //   height: 30,
+                                    // ),
+                                    Text(
+                                      'مفيش طلبات اتسلمت',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                          fontSize: 30,
+                                          fontWeight: FontWeight.w900,
+                                          color:
+                                              Theme.of(context).primaryColor),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                   context: context),
@@ -62,7 +80,82 @@ class DoneOrders extends StatelessWidget {
   }
 }
 
-Widget doneOrderItem(OrderModel model, int index, context) {
+Widget doneOrderItem(OrderModel model, int index, context, bool? value) {
+  var cubit = AdminCubit.get(context);
+  return Padding(
+    padding: const EdgeInsets.all(8.0),
+    child: Container(
+      decoration: BoxDecoration(
+          border: Border.all(color: Theme.of(context).primaryColor),
+          borderRadius: BorderRadius.circular(20)),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Expanded(
+            child: SizedBox(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 5),
+                    child: Text(
+                      'جنيه',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          fontSize: 20, color: Theme.of(context).primaryColor),
+                    ),
+                  ),
+                  Text(
+                    '${model.price}',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontSize: 20, color: Theme.of(context).primaryColor),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Expanded(
+              child: Padding(
+            padding: const EdgeInsetsDirectional.only(end: 10),
+            child: Text(
+              model.drinkName,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  fontSize: 20, color: Theme.of(context).primaryColor),
+            ),
+          )),
+          Expanded(
+              child: Padding(
+            padding: const EdgeInsetsDirectional.only(end: 10),
+            child: Text(
+              '${model.orderTime}',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  fontSize: 15, color: Theme.of(context).primaryColor),
+            ),
+          )),
+          !value!
+              ? Checkbox(
+                  value: cubit.isChecked[model.id] ?? false,
+                  onChanged: (v) {
+                    cubit.checkBoxClicked(model.id);
+                  },
+                )
+              : Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Icon(
+                    Icons.check_box,
+                    color: Theme.of(context).primaryColor,
+                  ),
+                )
+        ],
+      ),
+    ),
+  );
+}
+
+Widget doneUserItem(UserModel model, int index, context, state) {
   var cubit = AdminCubit.get(context);
 
   return Padding(
@@ -79,155 +172,158 @@ Widget doneOrderItem(OrderModel model, int index, context) {
         child: Row(
           children: [
             Expanded(
-              child: InkWell(
-                onTap: () {
-                  cubit.getUsersDetails(uId: model.uId);
-                  showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                            titlePadding: EdgeInsetsDirectional.zero,
-                            title: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Container(
-                                    clipBehavior: Clip.antiAlias,
-                                    decoration: BoxDecoration(
-                                        color: Theme.of(context)
-                                            .primaryColor
-                                            .withOpacity(.8),
-                                        borderRadius:
-                                            BorderRadiusDirectional.circular(
-                                                30)),
-                                    child: Image.network(
-                                      cubit.orderModel!.drinkImage,
-                                      width: 80,
-                                      height: 80,
-                                      fit: BoxFit.cover,
-                                    ),
+                child: ExpansionTile(
+                    tilePadding: EdgeInsets.zero,
+                    key: Key(index.toString()),
+                    // initiallyExpanded: index == selected,
+                    onExpansionChanged: (v) {
+                      cubit.getUserDoneOrders(uId: model.uId!);
+                      cubit.expansionChangSelected(index);
+                      print('s is $index');
+                    },
+                    title: Container(
+                      clipBehavior: Clip.antiAlias,
+                      padding: EdgeInsetsDirectional.zero,
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadiusDirectional.circular(20)),
+                      child: Row(
+                        children: [
+                          model.hasProfileImage!
+                              ? Container(
+                                  width: 60,
+                                  height: 60,
+                                  clipBehavior: Clip.antiAlias,
+                                  padding: EdgeInsetsDirectional.zero,
+                                  decoration: BoxDecoration(
+                                      borderRadius:
+                                          BorderRadiusDirectional.circular(20)),
+                                  child: Image(
+                                    image: NetworkImage(model.image!),
+                                    fit: BoxFit.cover,
                                   ),
-                                  Expanded(
-                                      child: Padding(
-                                    padding: const EdgeInsetsDirectional.only(
-                                        end: 10),
-                                    child: Text(
-                                      cubit.orderModel!.drinkName,
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  )),
-                                ],
-                              ),
-                            ),
-                            actions: [
-                              defaultButton(
-                                  onPressed: () {
-                                    Navigator.pop(context);
-                                  },
-                                  label: 'ماشي',
-                                  context: context,
-                                  fontSize: 20),
-                              const SizedBox(
-                                height: 10,
-                              ),
-                            ],
-                          ));
-                },
-                child: Row(
-                  children: [
-                    cubit.userDetails!.hasProfileImage!
-                        ? Image(
-                            image: NetworkImage(cubit.userDetails!.image!),
-                            width: 90,
-                            height: 90,
-                            fit: BoxFit.cover,
-                          )
-                        : const Icon(
-                            IconBroken.Profile,
-                            size: 70,
-                            color: Colors.white,
+                                )
+                              : Container(
+                                  width: 60,
+                                  height: 60,
+                                  clipBehavior: Clip.antiAlias,
+                                  padding: EdgeInsetsDirectional.zero,
+                                  decoration: BoxDecoration(
+                                      borderRadius:
+                                          BorderRadiusDirectional.circular(20)),
+                                  child: const Icon(
+                                    IconBroken.Profile,
+                                    size: 50,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                          const SizedBox(
+                            width: 20,
                           ),
-                    const SizedBox(
-                      width: 20,
-                    ),
-                    Expanded(
-                      child: Text(
-                        cubit.userDetails!.name!,
-                        textAlign: TextAlign.center,
-                        textDirection: TextDirection.rtl,
-                        style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).primaryColor),
+                          Expanded(
+                            child: Text(
+                              model.name!,
+                              textAlign: TextAlign.center,
+                              textDirection: TextDirection.rtl,
+                              style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Theme.of(context).primaryColor),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
-                ),
-              ),
-            ),
-
-            // Padding(
-            //   padding: const EdgeInsets.all(8.0),
-            //   child: defaultButton(
-            //       label: 'حاسب',
-            //       fontSize: 17,
-            //       onPressed: () {
-            //         cubit.orderDone(model: model);
-            //
-            //       },
-            //       context: context,
-            //       width: 50),
-            // ),
-
-            // IconButton(
-            //   onPressed: () {
-            //     showDialog(
-            //         context: context,
-            //         builder: (context) =>   Center(
-            //           child: AlertDialog(
-            //
-            //             titlePadding: const EdgeInsetsDirectional.all(10),
-            //             contentPadding: const EdgeInsetsDirectional.all(10),
-            //             insetPadding: EdgeInsets.zero,
-            //             content:
-            //             const Text('هتلغي الطلب ؟',style: TextStyle(fontSize: 30,),textAlign: TextAlign.end,),
-            //             actions: [
-            //               Row(
-            //                 children: [
-            //                   defaultButton(
-            //                       icon: FontAwesomeIcons.smile,
-            //                       label: 'لا دي حركة',
-            //                       fontSize: 20,
-            //                       onPressed: () {
-            //                         Navigator.pop(context);
-            //                       },
-            //                       context: context,
-            //                       width: 140
-            //                   ),
-            //                   const Spacer(),
-            //                   defaultButton(
-            //                       icon: FontAwesomeIcons.sadCry,
-            //                       label: 'أيوة',
-            //                       fontSize: 17,
-            //                       onPressed: () {
-            //                         cubit.deleteOrder(id: model.id);
-            //                         Navigator.pop(context);
-            //                       },
-            //                       context: context,
-            //                       width: 90
-            //                   ),
-            //                 ],
-            //               ),
-            //             ],
-            //           ),
-            //         ));
-            //   },
-            //   icon: const Icon(Icons.delete),color: Theme.of(context).primaryColor,),
-            // IconButton(
-            //   onPressed: () {
-            //     cubit.addFavOrder(index: index);
-            //   },
-            //   icon: const Icon(IconBroken.Heart),color: Theme.of(context).primaryColor,),
+                    children: [
+                      if(cubit.doneOrders.isNotEmpty)
+                  Checkbox(
+                      value: cubit.isAllChecked??false,
+                      onChanged: (v) {
+                        cubit.allCheckBoxClicked();
+                      }),
+                  ListView.builder(
+                    physics: const BouncingScrollPhysics(),
+                    shrinkWrap: true,
+                    itemBuilder: (context, index) => doneOrderItem(
+                        cubit.doneOrders[index],
+                        index,
+                        context,
+                        cubit.isAllChecked??false),
+                    itemCount: cubit.doneOrders.length,
+                  ),
+                      if(cubit.doneOrders.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Expanded(
+                          child: SizedBox(
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(horizontal: 5),
+                                  child: Text(
+                                    'جنيه',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                        fontSize: 20,
+                                        color: Theme.of(context).primaryColor),
+                                  ),
+                                ),
+                                Text(
+                                  '${cubit.total}',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                      fontSize: 20,
+                                      color: Theme.of(context).primaryColor),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsetsDirectional.only(end: 10),
+                            child: Text(
+                              'إجمالي',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context).primaryColor,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (cubit.checkedItems.isNotEmpty)
+                    InkWell(
+                      onTap: () {
+                        cubit.billedOrders(uId: model.uId!);
+                        cubit.expansionChangSelected(index);
+                      },
+                      child: Container(
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            color: Theme.of(context).primaryColor),
+                        child:  Center(
+                          child: state is LoadingBillOrdersState ? const CircularProgressIndicator() :const Text(
+                          'خالص',
+                          style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white),
+                          )
+                        ),
+                      ),
+                    ),
+                ])),
           ],
         ),
       ),

@@ -5,6 +5,7 @@ class OrderModel {
   late int id = 0;
   late bool isCold;
   late bool isNewOrder;
+  late int price;
   String? orderTime;
   String? drinkType;
   String? drinkQuantity;
@@ -27,6 +28,7 @@ class OrderModel {
     required this.id,
     required this.isCold,
     required this.isNewOrder,
+    required this.price,
     this.orderTime,
     this.drinkType,
     this.drinkQuantity,
@@ -48,6 +50,7 @@ class OrderModel {
     drinkImage = json['drinkImage'];
     id = json['id'];
     isNewOrder = json['isNewOrder'];
+    price = json['price'];
     isCold = json['isCold'];
     orderTime = json['orderTime'];
     drinkType = json['drinkType'];
@@ -72,6 +75,7 @@ class OrderModel {
       'id':id,
       'isCold':isCold,
       'isNewOrder':isNewOrder,
+      'price':price,
       'orderTime':orderTime,
       'drinkType':drinkType,
       'drinkQuantity':drinkQuantity,

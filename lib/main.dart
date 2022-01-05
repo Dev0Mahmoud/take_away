@@ -1,7 +1,5 @@
 import 'package:bloc/bloc.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:take_away/layout/admin_cubit/cubit.dart';
@@ -9,10 +7,9 @@ import 'package:take_away/shared/bloc_observer.dart';
 import 'package:take_away/shared/components/constance.dart';
 import 'package:take_away/shared/network/local/cache_helper.dart';
 import 'package:take_away/shared/styles/themes.dart';
-import 'package:take_away/layout/main_cubit/cubit.dart';
-import 'package:take_away/layout/main_cubit/states.dart';
-import 'layout/main_layout.dart';
-import 'modules/main_modules/login_screen/login_screen.dart';
+import 'package:take_away/layout/user_cubit/cubit.dart';
+import 'package:take_away/layout/user_cubit/states.dart';
+import 'layout/splash_screen.dart';
 
 
 void main() async{
@@ -24,20 +21,17 @@ void main() async{
   dId = 0;
   oId = 0;
   uId = CacheHelper.getData(key: 'uId')??CacheHelper.getData(key: 'uId');
-  if(uId != null){
-
-    widget = const MainLayout();
-  }else{
-    widget = LoginScreen();
-  }
-  runApp(MyApp(
-    startWidget: widget,
-  ));
+  // if(uId != null){
+  //
+  //   widget = const SplashScreen();
+  // }else{
+  //   widget = LoginScreen();
+  // }
+  runApp(MyApp());
 }
 class MyApp extends StatelessWidget
 {
-  Widget? startWidget;
-  MyApp({this.startWidget});
+
 
   @override
   Widget build(BuildContext context) {
@@ -45,13 +39,13 @@ class MyApp extends StatelessWidget
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (BuildContext context) => MainLayCubit()..getHotDrinksData()..getColdDrinksData(),
+          create: (BuildContext context) => UserCubit()..getHotDrinksData()..getColdDrinksData(),
         ),
         BlocProvider(
-          create: (BuildContext context) => AdminCubit()..getHotDrinksData()..getColdDrinksData(),
+          create: (BuildContext context) => AdminCubit()..getHotDrinksData()..getColdDrinksData()
         ),
       ],
-      child: BlocConsumer<MainLayCubit, MainLayStates>(
+      child: BlocConsumer<UserCubit, UserStates>(
 
           listener: (context,state){},
           builder: (context,state) {
@@ -62,7 +56,7 @@ class MyApp extends StatelessWidget
               darkTheme:  darkTheme,
               themeMode: ThemeMode.system,
               debugShowCheckedModeBanner: false,
-              home: startWidget,
+              home: const SplashScreen(),
             );
           }
       ),

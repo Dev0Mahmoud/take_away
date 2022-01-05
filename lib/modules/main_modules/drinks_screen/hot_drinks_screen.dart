@@ -1,11 +1,10 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_conditional_rendering/conditional.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:take_away/data/dialoge_options.dart';
-import 'package:take_away/layout/main_cubit/cubit.dart';
-import 'package:take_away/layout/main_cubit/states.dart';
+import 'package:take_away/layout/user_cubit/cubit.dart';
+import 'package:take_away/layout/user_cubit/states.dart';
 import 'package:take_away/model/drinks_model.dart';
 import 'package:take_away/shared/components/components.dart';
 
@@ -14,16 +13,10 @@ class HotDrinksScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<MainLayCubit, MainLayStates>(
-        listener: (context, state) {
-      if (state is MainLayOrderDone) {
-        showToast(state: ToastStates.SUCCESS, msg: 'طلبت و هتنول ;)');
-      }
-      if (state is MainLayOrderDeleteDone) {
-        showToast(state: ToastStates.ERROR, msg: 'طلبك إتلغي');
-      }
-    }, builder: (context, state) {
-          var cubit = MainLayCubit.get(context);
+    return BlocConsumer<UserCubit, UserStates>(
+        listener: (context, state) {},
+        builder: (context, state) {
+          var cubit = UserCubit.get(context);
 
       return Conditional.single(
           conditionBuilder: (context) => cubit.hotDrinksMenu.isNotEmpty,
@@ -45,7 +38,7 @@ Widget hotItemBuilder(
   int index,
   BuildContext context,
 ) {
-  var cubit = MainLayCubit.get(context);
+  var cubit = UserCubit.get(context);
   TextEditingController otherAddController = TextEditingController();
   bool isCold = false;
   return Padding(
@@ -398,11 +391,17 @@ Widget hotItemBuilder(
           },
           child: Row(
             children: [
-              Image(
-                image: NetworkImage(model.drinkImage),
-                width: 80,
-                height: 80,
-                fit: BoxFit.cover,
+              Container(
+                clipBehavior: Clip.antiAlias,
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20)
+                ),
+                child: Image(
+                  image: NetworkImage(model.drinkImage),
+                  width: 80,
+                  height: 80,
+                  fit: BoxFit.cover,
+                ),
               ),
               const SizedBox(
                 width: 20,
